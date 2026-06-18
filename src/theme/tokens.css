@@ -1,0 +1,35 @@
+:root {
+  --bg: #F4EDD9;
+  --paper: #FFFFFF;
+  --paper-2: #FBF5E6;
+  --ink: #2C3E50;
+  --ink-soft: #5b6b7a;
+  --ink-faint: #9aa6b0;
+  --coral: #FF6B6B;
+  --coral-soft: #FFE3DE;
+  --teal: #15A98B;
+  --teal-soft: #D8F2EC;
+  --yellow: #FFE66D;
+  --green: #6AB04C;
+  --navy: #2C3E50;
+  --rule: rgba(44, 62, 80, 0.14);
+  --hard-shadow: 5px 5px 0 rgba(44, 62, 80, 0.13);
+  --hard-shadow-strong: 6px 6px 0 var(--navy);
+  --radius: 16px;
+  --radius-sm: 11px;
+  --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+:root[data-theme="dark"] {
+  --bg: #1A2238;
+  --paper: #2B3956;
+  --paper-2: #243049;
+  --ink: #F4EDD9;
+  --ink-soft: #b9c2cf;
+  --ink-faint: #8a93a3;
+  --coral-soft: rgba(255, 107, 107, 0.18);
+  --teal-soft: rgba(21, 169, 139, 0.18);
+  --rule: rgba(255, 255, 255, 0.14);
+  --hard-shadow: 5px 5px 0 rgba(0, 0, 0, 0.32);
+  --hard-shadow-strong: 6px 6px 0 rgba(0, 0, 0, 0.45);
+}
