@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>.leg{fill:#2C3E50}@media (prefers-color-scheme:dark){.leg{fill:#ffffff}}</style>
+  <rect class="leg" x="13" y="12" width="11" height="40" rx="5.5"/>
+  <rect class="leg" x="40" y="12" width="11" height="40" rx="5.5"/>
+  <rect x="14" y="27" width="36" height="11" rx="5.5" fill="#FF6B6B" transform="rotate(-20 32 32)"/>
+</svg>
