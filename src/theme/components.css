@@ -156,7 +156,41 @@ body {
 .settings-opt.on { background: var(--navy); color: var(--yellow); }
 .settings-about { margin: 0; font-size: 13px; color: var(--ink-soft); }
 
+/* ===== timer ===== */
+.timer { display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 8px 0; }
+.timer-stage {
+  background: var(--paper); border-radius: 26px; box-shadow: var(--hard-shadow);
+  padding: 36px 48px; transform: rotate(0.2deg);
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.timer-ring { position: relative; width: 300px; height: 300px; }
+.timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.timer-time {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 72px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: 1px;
+}
+.timer-ring.warn .timer-time { color: var(--coral); animation: hc-blink 1s steps(2) infinite; }
+.timer-time.up { position: static; font-size: 88px; }
+.timer-done { font-size: 20px; font-weight: 600; color: var(--coral); display: flex; align-items: center; gap: 6px; }
+.timer-controls { display: flex; gap: 12px; }
+.timer-panel { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.timer-presets { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.preset {
+  border: none; cursor: pointer; font: inherit; font-size: 14px; background: var(--paper-2); color: var(--ink);
+  padding: 8px 16px; border-radius: 100px; box-shadow: 3px 3px 0 rgba(44, 62, 80, 0.1);
+}
+.preset.on { background: var(--teal); color: #fff; }
+.preset:disabled { opacity: 0.5; cursor: not-allowed; }
+.timer-custom { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-soft); }
+.timer-custom input {
+  width: 60px; border: 2px dashed var(--rule); border-radius: 10px; background: var(--paper-2);
+  color: var(--ink); font: inherit; font-size: 15px; padding: 8px 10px; text-align: center;
+}
+@keyframes hc-blink { 50% { opacity: 0.35; } }
+
 @media (max-width: 640px) {
   .picker { grid-template-columns: 1fr; }
   .picker-name { font-size: 44px; }
+  .timer-ring { width: 240px; height: 240px; }
+  .timer-time { font-size: 56px; }
 }
