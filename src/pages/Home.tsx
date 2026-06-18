@@ -11,7 +11,7 @@ export function Home() {
         <div className="hc-brand">
           <Logo size={36} />
           <div>
-            <div className="hc-brand-name">HyperClass</div>
+            <div className="hc-brand-name">Hyper<span className="hc-brand-accent">Class</span></div>
             <div className="hc-brand-sub">课堂工具箱</div>
           </div>
         </div>

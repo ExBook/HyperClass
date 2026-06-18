@@ -1,7 +1,30 @@
 import type { CSSProperties, ReactNode } from 'react';
+import {
+  type Icon as TablerIcon,
+  IconSettings, IconArrowLeft, IconRefresh, IconHandFinger, IconMicrophone, IconRotate2,
+  IconVolume, IconVolumeOff, IconPlayerPlay, IconPlayerPause, IconBellRinging, IconUserCheck,
+  IconClock, IconTools, IconBook, IconMathFunction, IconAbc, IconAtom, IconFlask, IconLeaf,
+  IconWorld, IconScale, IconMusic, IconPalette, IconRun, IconDeviceDesktop, IconMap2,
+  IconQuestionMark,
+} from '@tabler/icons-react';
 
-export function Icon({ name, size = 20, style }: { name: string; size?: number; style?: CSSProperties }) {
-  return <i className={`ti ti-${name}`} style={{ fontSize: size, lineHeight: 1, ...style }} aria-hidden="true" />;
+const ICONS: Record<string, TablerIcon> = {
+  settings: IconSettings, 'arrow-left': IconArrowLeft, refresh: IconRefresh,
+  'hand-finger': IconHandFinger, microphone: IconMicrophone, 'rotate-2': IconRotate2,
+  volume: IconVolume, 'volume-off': IconVolumeOff, 'player-play': IconPlayerPlay,
+  'player-pause': IconPlayerPause, 'bell-ringing': IconBellRinging, 'user-check': IconUserCheck,
+  clock: IconClock, tools: IconTools, book: IconBook, 'math-function': IconMathFunction,
+  abc: IconAbc, atom: IconAtom, flask: IconFlask, leaf: IconLeaf, world: IconWorld,
+  scale: IconScale, music: IconMusic, palette: IconPalette, run: IconRun,
+  'device-desktop': IconDeviceDesktop, 'map-2': IconMap2,
+};
+
+export function Icon(
+  { name, size = 20, stroke = 1.5, style }:
+  { name: string; size?: number; stroke?: number; style?: CSSProperties },
+) {
+  const C = ICONS[name] ?? IconQuestionMark;
+  return <C size={size} stroke={stroke} style={style} aria-hidden />;
 }
 
 export function Logo({ size = 32 }: { size?: number }) {

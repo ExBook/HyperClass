@@ -17,6 +17,7 @@ body {
 .hc-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
 .hc-brand { display: flex; align-items: center; gap: 13px; }
 .hc-brand-name { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; color: var(--ink); }
+.hc-brand-accent { color: var(--coral); }
 .hc-brand-sub { font-size: 12px; color: var(--ink-faint); }
 .hc-iconbtn {
   width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
