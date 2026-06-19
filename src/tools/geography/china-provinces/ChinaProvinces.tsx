@@ -4,7 +4,7 @@ import type { FeatureMap, Usage } from '../../../primitives/drag-label/types';
 import { Btn, Icon } from '../../../app/ui';
 import { LABELS } from './labels';
 
-const MAP_URL = '/content/geography/china-provinces/map.json';
+const MAP_URL = import.meta.env.BASE_URL + 'content/geography/china-provinces/map.json';
 
 export function ChinaProvinces() {
   const [geo, setGeo] = useState<FeatureMap | null>(null);
