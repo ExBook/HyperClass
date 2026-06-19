@@ -1,115 +1,148 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { geoPath } from 'd3-geo';
-import type { FeatureMap, Label, Usage } from './types';
-import { hitTest } from './engine';
+import type { FeatureMap, Label } from './types';
 import { ensureWinding } from './geo';
 import { buildProjection } from './projection';
 
 const W = 800, H = 600;
-type ErrPulse = { x: number; y: number; key: number };
 
 type Props = {
   geo: FeatureMap;
   labels: Label[];
-  usage?: Usage;
-  onPlace: (labelId: string, isCorrect: boolean, matchedFeatureId: string | null) => void;
-  placedLabelIds: Set<string>;
-  correctFeatureIds: Set<string>;
+  interactive: boolean;                 // false = 演示(答案), true = 练习
+  placements: Record<string, string>;   // labelId -> featureId
+  graded: boolean;
+  onAssign: (labelId: string, featureId: string) => void;
+  onUnassign: (labelId: string) => void;
 };
 
-export function DragLabelStage({ geo, labels, usage = 'practice', onPlace, placedLabelIds, correctFeatureIds }: Props) {
-  const isPractice = usage === 'practice';
+export function DragLabelStage({ geo, labels, interactive, placements, graded, onAssign, onUnassign }: Props) {
   const boardRef = useRef<SVGSVGElement | null>(null);
-  const [dragging, setDragging] = useState<{ label: Label; x: number; y: number } | null>(null);
-  const [pulses, setPulses] = useState<ErrPulse[]>([]);
-  const pulseKey = useRef(0);
+  const [drag, setDrag] = useState<{ label: Label; x: number; y: number } | null>(null);
+  const [hover, setHover] = useState<string | null>(null);
 
   const wound = useMemo(() => ensureWinding(geo), [geo]);
   const { projection, pathGen } = useMemo(() => {
     const proj = buildProjection(wound, W, H);
     return { projection: proj, pathGen: geoPath(proj) };
   }, [wound]);
+  void projection;
 
-  function screenToLonLat(cx: number, cy: number): [number, number] | null {
+  const centroids = useMemo(() => {
+    const m = new Map<string, [number, number]>();
+    for (const f of wound.features) {
+      const c = pathGen.centroid(f);
+      if (Number.isFinite(c[0])) m.set(f.properties.id, [c[0], c[1]]);
+    }
+    return m;
+  }, [wound, pathGen]);
+  const nameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const f of wound.features) m.set(f.properties.id, f.properties.name);
+    return m;
+  }, [wound]);
+
+  function toSvg(cx: number, cy: number): [number, number] | null {
     const svg = boardRef.current;
     if (!svg) return null;
     const pt = svg.createSVGPoint();
     pt.x = cx; pt.y = cy;
     const ctm = svg.getScreenCTM();
     if (!ctm) return null;
-    const local = pt.matrixTransform(ctm.inverse());
-    const ll = projection.invert?.([local.x, local.y]);
-    return ll ? [ll[0], ll[1]] : null;
+    const p = pt.matrixTransform(ctm.inverse());
+    return [p.x, p.y];
+  }
+  function nearest(sx: number, sy: number): string | null {
+    let best: string | null = null, bd = Infinity;
+    for (const [id, [x, y]] of centroids) {
+      const d = (x - sx) ** 2 + (y - sy) ** 2;
+      if (d < bd) { bd = d; best = id; }
+    }
+    return best;
   }
 
   useEffect(() => {
-    if (!dragging) return;
-    const move = (e: PointerEvent) => setDragging((d) => (d ? { ...d, x: e.clientX, y: e.clientY } : null));
+    if (!drag) return;
+    const move = (e: PointerEvent) => {
+      setDrag((d) => (d ? { ...d, x: e.clientX, y: e.clientY } : null));
+      const s = toSvg(e.clientX, e.clientY);
+      if (s) setHover(nearest(s[0], s[1]));
+    };
     const up = (e: PointerEvent) => {
-      const ll = screenToLonLat(e.clientX, e.clientY);
-      if (!ll) { setDragging(null); return; }
-      const r = hitTest(wound, ll);
-      const correct = r.matched && r.featureId === dragging.label.targetFeatureId;
-      if (!correct) {
-        const svg = boardRef.current;
-        if (svg) {
-          const pt = svg.createSVGPoint();
-          pt.x = e.clientX; pt.y = e.clientY;
-          const local = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-          const k = pulseKey.current++;
-          setPulses((a) => [...a, { x: local.x, y: local.y, key: k }]);
-          setTimeout(() => setPulses((a) => a.filter((p) => p.key !== k)), 600);
-        }
-      }
-      onPlace(dragging.label.id, correct, r.featureId);
-      setDragging(null);
+      const s = toSvg(e.clientX, e.clientY);
+      const target = s ? nearest(s[0], s[1]) : null;
+      if (target) onAssign(drag.label.id, target);
+      setDrag(null); setHover(null);
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
     return () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
-  }, [dragging, wound, onPlace, projection]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drag, centroids, onAssign]);
 
-  function startDrag(label: Label, ev: React.PointerEvent) {
-    setDragging({ label, x: ev.clientX, y: ev.clientY });
+  // ===== 演示态:直接显示答案 =====
+  if (!interactive) {
+    return (
+      <div className="dl dl--present">
+        <div className="dl-board">
+          <svg className="dl-map" viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
+            {wound.features.map((f) => <path key={f.properties.id} d={pathGen(f) ?? ''} className="dl-feature shown" />)}
+            {labels.map((l) => {
+              const c = centroids.get(l.targetFeatureId);
+              return c ? <text key={l.id} x={c[0]} y={c[1]} className="dl-placed" textAnchor="middle">{l.text}</text> : null;
+            })}
+          </svg>
+        </div>
+      </div>
+    );
   }
 
-  const unplaced = labels.filter((l) => !placedLabelIds.has(l.id));
-  const labelsToShow = isPractice ? labels.filter((l) => correctFeatureIds.has(l.targetFeatureId)) : labels;
+  // ===== 练习态 =====
+  const featureToLabel = new Map<string, Label>();
+  for (const l of labels) { const fid = placements[l.id]; if (fid) featureToLabel.set(fid, l); }
+  const unplaced = labels.filter((l) => !placements[l.id]);
+  const isCorrect = (l: Label) => placements[l.id] === l.targetFeatureId;
+
+  function startDrag(label: Label, ev: React.PointerEvent) { setDrag({ label, x: ev.clientX, y: ev.clientY }); }
 
   return (
-    <div className={`dl${isPractice ? '' : ' dl--present'}`}>
-      {isPractice && (
-        <div className="dl-side">
-          <div className="dl-side-head"><span>未放置</span><span className="dl-count">{unplaced.length} / {labels.length}</span></div>
-          <ul className="dl-tags">
-            {unplaced.map((l) => (
-              <li key={l.id} className={`dl-tag${dragging?.label.id === l.id ? ' dragging' : ''}`} onPointerDown={(e) => startDrag(l, e)}>
-                {l.text}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <div className="dl">
+      <div className="dl-side">
+        <div className="dl-side-head"><span>未放置</span><span className="dl-count">{unplaced.length} / {labels.length}</span></div>
+        <ul className="dl-tags">
+          {unplaced.map((l) => (
+            <li key={l.id} className={`dl-tag${drag?.label.id === l.id ? ' dragging' : ''}`} onPointerDown={(e) => startDrag(l, e)}>{l.text}</li>
+          ))}
+        </ul>
+        {unplaced.length === 0 && <p className="dl-hint">都放好了,点「提交批改」</p>}
+      </div>
 
       <div className="dl-board">
         <svg ref={boardRef} className="dl-map" viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
           {wound.features.map((f) => {
-            const locked = isPractice && correctFeatureIds.has(f.properties.id);
+            const id = f.properties.id;
+            const lab = featureToLabel.get(id);
+            let cls = 'dl-feature';
+            if (drag && hover === id) cls += ' target';
+            else if (lab) cls += graded ? (isCorrect(lab) ? ' correct' : ' wrong') : ' assigned';
+            return <path key={id} d={pathGen(f) ?? ''} className={cls} />;
+          })}
+          {[...featureToLabel.entries()].map(([fid, lab]) => {
+            const c = centroids.get(fid);
+            if (!c) return null;
+            const lc = `dl-placed${graded ? (isCorrect(lab) ? ' ok' : ' no') : ' set'}`;
             return (
-              <path key={f.properties.id} d={pathGen(f) ?? ''}
-                className={`dl-feature${locked ? ' locked' : ''}${isPractice ? '' : ' shown'}`} />
+              <text key={lab.id} x={c[0]} y={c[1]} className={lc} textAnchor="middle"
+                onClick={() => !graded && onUnassign(lab.id)}>{lab.text}</text>
             );
           })}
-          {labelsToShow.map((l) => {
-            const f = wound.features.find((ft) => ft.properties.id === l.targetFeatureId);
-            if (!f) return null;
-            const c = pathGen.centroid(f);
-            if (!Number.isFinite(c[0])) return null;
-            return <text key={l.id} x={c[0]} y={c[1]} className="dl-label" textAnchor="middle">{l.text}</text>;
-          })}
-          {pulses.map((p) => <circle key={p.key} cx={p.x} cy={p.y} r={8} className="dl-pulse" />)}
         </svg>
-        {dragging && <div className="dl-drag" style={{ left: dragging.x, top: dragging.y }}>{dragging.label.text}</div>}
+        {drag && (
+          <>
+            <div className="dl-drag" style={{ left: drag.x, top: drag.y }}>{drag.label.text}</div>
+            {hover && <div className="dl-target-hint" style={{ left: drag.x, top: drag.y + 28 }}>→ {nameById.get(hover)}</div>}
+          </>
+        )}
       </div>
     </div>
   );

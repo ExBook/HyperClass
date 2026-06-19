@@ -5,7 +5,7 @@ import {
   IconVolume, IconVolumeOff, IconPlayerPlay, IconPlayerPause, IconBellRinging, IconUserCheck,
   IconClock, IconTools, IconBook, IconMathFunction, IconAbc, IconAtom, IconFlask, IconLeaf,
   IconWorld, IconScale, IconMusic, IconPalette, IconRun, IconDeviceDesktop, IconMap2,
-  IconQuestionMark,
+  IconCircleCheck, IconQuestionMark,
 } from '@tabler/icons-react';
 
 const ICONS: Record<string, TablerIcon> = {
@@ -16,7 +16,7 @@ const ICONS: Record<string, TablerIcon> = {
   clock: IconClock, tools: IconTools, book: IconBook, 'math-function': IconMathFunction,
   abc: IconAbc, atom: IconAtom, flask: IconFlask, leaf: IconLeaf, world: IconWorld,
   scale: IconScale, music: IconMusic, palette: IconPalette, run: IconRun,
-  'device-desktop': IconDeviceDesktop, 'map-2': IconMap2,
+  'device-desktop': IconDeviceDesktop, 'map-2': IconMap2, 'circle-check': IconCircleCheck,
 };
 
 export function Icon(

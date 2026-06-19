@@ -9,8 +9,8 @@ const MAP_URL = '/content/geography/china-provinces/map.json';
 export function ChinaProvinces() {
   const [geo, setGeo] = useState<FeatureMap | null>(null);
   const [usage, setUsage] = useState<Usage>('present');
-  const [placed, setPlaced] = useState<{ labelId: string; featureId: string }[]>([]);
-  const [done, setDone] = useState(false);
+  const [placements, setPlacements] = useState<Record<string, string>>({});
+  const [graded, setGraded] = useState(false);
   const [sound, setSound] = useState(true);
   const audio = useRef<AudioContext | null>(null);
 
@@ -21,8 +21,9 @@ export function ChinaProvinces() {
   }, []);
 
   const isPractice = usage === 'practice';
-  const placedLabelIds = new Set(placed.map((p) => p.labelId));
-  const correctFeatureIds = new Set(placed.map((p) => p.featureId));
+  const placedCount = Object.keys(placements).length;
+  const correctCount = LABELS.filter((l) => placements[l.id] === l.targetFeatureId).length;
+  const allCorrect = graded && correctCount === LABELS.length;
 
   function beep(freq: number, dur = 0.1, type: OscillatorType = 'triangle') {
     if (!sound) return;
@@ -31,27 +32,39 @@ export function ChinaProvinces() {
       const ctx = audio.current ?? (audio.current = new Ctx());
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.type = type; o.frequency.value = freq; o.connect(g); g.connect(ctx.destination);
-      g.gain.setValueAtTime(0.07, ctx.currentTime);
+      g.gain.setValueAtTime(0.06, ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
       o.start(); o.stop(ctx.currentTime + dur);
     } catch { /* audio unavailable */ }
   }
 
-  function setMode(u: Usage) { if (u === usage) return; setUsage(u); setPlaced([]); setDone(false); }
-  function reset() { setPlaced([]); setDone(false); }
+  function setMode(u: Usage) { if (u === usage) return; setUsage(u); setPlacements({}); setGraded(false); }
 
-  function handlePlace(labelId: string, isCorrect: boolean, featureId: string | null) {
-    if (!isPractice) return;
-    if (!isCorrect || !featureId) { beep(180, 0.13, 'sawtooth'); return; }
-    if (placedLabelIds.has(labelId)) return;
-    beep(660, 0.07); window.setTimeout(() => beep(990, 0.1), 70);
-    const next = [...placed, { labelId, featureId }];
-    setPlaced(next);
-    if (next.length === LABELS.length) {
-      setDone(true);
-      [523, 659, 784, 1047].forEach((f, i) => window.setTimeout(() => beep(f, 0.2), i * 130));
-    }
+  function assign(labelId: string, featureId: string) {
+    if (graded) return;
+    setPlacements((prev) => {
+      const next = { ...prev };
+      for (const k of Object.keys(next)) if (next[k] === featureId) delete next[k];
+      next[labelId] = featureId;
+      return next;
+    });
+    beep(520, 0.05);
   }
+
+  function unassign(labelId: string) {
+    if (graded) return;
+    setPlacements((prev) => { const next = { ...prev }; delete next[labelId]; return next; });
+  }
+
+  function submit() {
+    if (placedCount === 0 || graded) return;
+    setGraded(true);
+    const c = LABELS.filter((l) => placements[l.id] === l.targetFeatureId).length;
+    if (c === LABELS.length) [523, 659, 784, 1047].forEach((f, i) => window.setTimeout(() => beep(f, 0.2), i * 130));
+    else { beep(660, 0.12); window.setTimeout(() => beep(523, 0.16), 150); }
+  }
+
+  function redo() { setPlacements({}); setGraded(false); }
 
   if (!geo) return <div className="hc-loading">地图加载中…</div>;
 
@@ -62,30 +75,33 @@ export function ChinaProvinces() {
           <button className={!isPractice ? 'on' : ''} onClick={() => setMode('present')}>演示</button>
           <button className={isPractice ? 'on' : ''} onClick={() => setMode('practice')}>练习</button>
         </div>
-        {isPractice && <span className="tool-progress">已放置 {placed.length} / {LABELS.length}</span>}
+        {isPractice && !graded && <span className="tool-progress">已放置 {placedCount} / {LABELS.length}</span>}
+        {isPractice && graded && <span className={`tool-score${allCorrect ? ' ok' : ''}`}>正确 {correctCount} / {LABELS.length}</span>}
         <div style={{ flex: 1 }} />
         <button className={`tg${sound ? ' on' : ''}`} onClick={() => setSound((s) => !s)}>
           <Icon name={sound ? 'volume' : 'volume-off'} size={16} /> 音效
         </button>
-        {isPractice && <Btn onClick={reset} disabled={placed.length === 0}><Icon name="refresh" /> 重置</Btn>}
+        {isPractice && !graded && <Btn variant="coral" onClick={submit} disabled={placedCount === 0}><Icon name="circle-check" /> 提交批改</Btn>}
+        {isPractice && graded && <Btn onClick={redo}><Icon name="refresh" /> 重做</Btn>}
       </div>
 
       <DragLabelStage
         geo={geo}
         labels={LABELS}
-        usage={usage}
-        onPlace={handlePlace}
-        placedLabelIds={placedLabelIds}
-        correctFeatureIds={correctFeatureIds}
+        interactive={isPractice}
+        placements={placements}
+        graded={graded}
+        onAssign={assign}
+        onUnassign={unassign}
       />
 
-      {done && (
-        <div className="hc-overlay" onClick={reset}>
+      {allCorrect && (
+        <div className="hc-overlay" onClick={redo}>
           <div className="hc-overlay-card" onClick={(e) => e.stopPropagation()}>
             <div className="hc-overlay-mark"><Icon name="bell-ringing" size={34} /></div>
-            <h2>全部就位!</h2>
-            <p>{LABELS.length} 个省级行政区都放对了</p>
-            <Btn variant="coral" onClick={reset}><Icon name="refresh" /> 再来一次</Btn>
+            <h2>全部正确!</h2>
+            <p>{LABELS.length} 个省级行政区全对</p>
+            <Btn variant="coral" onClick={redo}><Icon name="refresh" /> 再来一次</Btn>
           </div>
         </div>
       )}

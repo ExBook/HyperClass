@@ -206,11 +206,19 @@ body {
 .dl-map { width: 100%; height: auto; display: block; }
 .dl-feature { fill: rgba(44, 62, 80, 0.05); stroke: var(--ink-faint); stroke-width: 0.8; transition: fill 0.18s; }
 .dl-feature.shown { fill: var(--teal-soft); stroke: var(--teal); }
-.dl-feature.locked { fill: rgba(106, 176, 76, 0.3); stroke: var(--green); }
-.dl-label { font-size: 11px; font-weight: 600; fill: var(--ink); pointer-events: none; }
-.dl-pulse { fill: none; stroke: var(--coral); stroke-width: 2.5; animation: dl-pulse 0.6s ease-out forwards; }
-@keyframes dl-pulse { 0% { r: 8; opacity: 1; } 100% { r: 30; opacity: 0; } }
-.dl-drag { position: fixed; pointer-events: none; background: var(--paper); border-radius: 10px; padding: 7px 12px; font-size: 14px; box-shadow: 5px 5px 0 rgba(44, 62, 80, 0.2); transform: translate(-50%, -50%); z-index: 1000; }
+.dl-feature.assigned { fill: rgba(44, 62, 80, 0.12); stroke: var(--ink-soft); }
+.dl-feature.target { fill: var(--coral-soft); stroke: var(--coral); stroke-width: 1.8; }
+.dl-feature.correct { fill: rgba(106, 176, 76, 0.32); stroke: var(--green); }
+.dl-feature.wrong { fill: rgba(226, 75, 74, 0.24); stroke: #E24B4A; }
+.dl-placed { font-size: 12px; font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; pointer-events: none; }
+.dl-placed.set { cursor: pointer; pointer-events: auto; }
+.dl-placed.ok { fill: var(--green); }
+.dl-placed.no { fill: #E24B4A; }
+.dl-hint { margin: 14px 2px 0; font-size: 12px; color: var(--coral); }
+.dl-drag { position: fixed; pointer-events: none; background: var(--coral); color: #fff; border-radius: 10px; padding: 7px 13px; font-size: 14px; font-weight: 500; box-shadow: 5px 5px 0 rgba(44, 62, 80, 0.25); transform: translate(-50%, -50%); z-index: 1000; }
+.dl-target-hint { position: fixed; pointer-events: none; transform: translate(-50%, 0); background: var(--navy); color: var(--yellow); font-size: 12px; padding: 3px 9px; border-radius: 8px; z-index: 1000; white-space: nowrap; }
+.tool-score { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+.tool-score.ok { color: var(--green); }
 
 /* ===== completion overlay ===== */
 .hc-overlay { position: fixed; inset: 0; background: rgba(44, 62, 80, 0.45); display: flex; align-items: center; justify-content: center; z-index: 100; }
