@@ -6,6 +6,42 @@ import { buildProjection } from './projection';
 
 const W = 800, H = 600;
 
+type PlacedLabel = { id: string; text: string; ax: number; ay: number; x: number; y: number; moved: boolean; small: boolean };
+
+/**
+ * 演示态标签排布(轻量避让):大地块标在质心;放不下就按候选偏移移开并画引线;
+ * 小地块(京津沪港澳等)画一个点标出位置,名字引到附近空白处。
+ */
+function layoutLabels(labels: Label[], centroids: Map<string, [number, number]>, smallIds: Set<string>): PlacedLabel[] {
+  const FH = 15;
+  const CAND: [number, number][] = [
+    [0, 0], [0, -17], [0, 17], [24, -13], [-24, -13], [28, 3], [-28, 3],
+    [34, -22], [-34, -22], [0, -32], [0, 32], [46, -14], [-46, -14], [46, -32], [-46, -32],
+  ];
+  const hit = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
+    Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
+  const boxes: { x: number; y: number; w: number; h: number }[] = [];
+  const out: PlacedLabel[] = [];
+  // 大地块先排(占住质心),小地块后排(更可能被推开)
+  const order = [...labels].sort((a, b) => (smallIds.has(a.targetFeatureId) ? 1 : 0) - (smallIds.has(b.targetFeatureId) ? 1 : 0));
+  for (const l of order) {
+    const c = centroids.get(l.targetFeatureId);
+    if (!c) continue;
+    const w = l.text.length * 12 + 4;
+    let chosen = { x: c[0], y: c[1] };
+    for (const [dx, dy] of CAND) {
+      const box = { x: c[0] + dx, y: c[1] + dy, w, h: FH };
+      if (!boxes.some((b) => hit(box, b))) { chosen = { x: box.x, y: box.y }; break; }
+    }
+    boxes.push({ x: chosen.x, y: chosen.y, w, h: FH });
+    out.push({
+      id: l.id, text: l.text, ax: c[0], ay: c[1], x: chosen.x, y: chosen.y,
+      moved: Math.hypot(chosen.x - c[0], chosen.y - c[1]) > 8, small: smallIds.has(l.targetFeatureId),
+    });
+  }
+  return out;
+}
+
 type Props = {
   geo: FeatureMap;
   labels: Label[];
@@ -44,6 +80,8 @@ export function DragLabelStage({ geo, labels, interactive, placements, graded, o
     wound.features.forEach((f, i) => { if (areas[i] < mean * 0.18) s.add(f.properties.id); });
     return s;
   }, [wound, pathGen]);
+
+  const presentLayout = useMemo(() => layoutLabels(labels, centroids, smallIds), [labels, centroids, smallIds]);
 
   function toSvg(cx: number, cy: number): [number, number] | null {
     const svg = boardRef.current;
@@ -90,10 +128,13 @@ export function DragLabelStage({ geo, labels, interactive, placements, graded, o
         <div className="dl-board">
           <svg className="dl-map" viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
             {wound.features.map((f) => <path key={f.properties.id} d={pathGen(f) ?? ''} className="dl-feature shown" />)}
-            {labels.map((l) => {
-              const c = centroids.get(l.targetFeatureId);
-              return c ? <text key={l.id} x={c[0]} y={c[1]} className="dl-placed" textAnchor="middle">{l.text}</text> : null;
-            })}
+            {presentLayout.map((p) => (
+              <g key={p.id}>
+                {p.small && <circle cx={p.ax} cy={p.ay} r={3} className="dl-dot" />}
+                {p.moved && <line x1={p.ax} y1={p.ay} x2={p.x} y2={p.y} className="dl-leader" />}
+                <text x={p.x} y={p.y} className="dl-placed" textAnchor="middle">{p.text}</text>
+              </g>
+            ))}
           </svg>
         </div>
       </div>
