@@ -297,8 +297,19 @@ body {
 .sb-count button { width: 30px; height: 30px; border: none; cursor: pointer; background: var(--paper-2); border-radius: 8px; font-size: 18px; color: var(--ink); }
 .sb-count span { min-width: 18px; text-align: center; font-weight: 600; color: var(--ink); }
 
+/* ===== draw box (抽题盒) ===== */
+.db { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.db-stage { background: var(--paper); border-radius: 22px; padding: 36px 28px; min-height: 380px; box-shadow: var(--hard-shadow); transform: rotate(0.2deg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; perspective: 1000px; }
+.db-deck { font-size: 18px; color: var(--ink-faint); padding: 60px 0; }
+.db-card { font-size: 40px; font-weight: 700; color: var(--ink); line-height: 1.35; max-width: 92%; background: var(--paper-2); border-radius: 18px; padding: 28px 34px; box-shadow: 5px 5px 0 rgba(44, 62, 80, 0.14); animation: db-flip 0.45s cubic-bezier(.2,.9,.3,1.2); }
+.db-meta { font-size: 14px; color: var(--ink-faint); }
+.db-actions { display: flex; gap: 12px; }
+.db-side { background: var(--paper); border-radius: 18px; padding: 18px; box-shadow: var(--hard-shadow); transform: rotate(-0.5deg); }
+@keyframes db-flip { from { transform: rotateY(-88deg); opacity: 0; } to { transform: rotateY(0); opacity: 1; } }
+
 @media (max-width: 640px) {
   .rg { grid-template-columns: 1fr; }
+  .db { grid-template-columns: 1fr; }
   .picker { grid-template-columns: 1fr; }
   .picker-name { font-size: 44px; }
   .timer-ring { width: 240px; height: 240px; }
