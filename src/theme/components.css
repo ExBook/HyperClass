@@ -236,8 +236,12 @@ body {
 
 /* ===== function graph (函数图像) ===== */
 .fg { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
-.fg-plot { background: var(--paper); border-radius: 22px; padding: 18px; box-shadow: var(--hard-shadow); }
+.fg-plot { position: relative; background: var(--paper); border-radius: 22px; padding: 18px; box-shadow: var(--hard-shadow); }
 .fg-eq { text-align: center; font-size: 30px; font-weight: 700; color: var(--ink); margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.fg-zoom { position: absolute; top: 16px; right: 16px; display: flex; gap: 6px; align-items: center; }
+.fg-zbtn { width: 32px; height: 32px; border: none; cursor: pointer; background: var(--paper-2); color: var(--ink); border-radius: 9px; box-shadow: 2px 2px 0 rgba(44, 62, 80, 0.12); font-size: 20px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.fg-zfit { height: 32px; padding: 0 12px; border: none; cursor: pointer; background: var(--paper-2); color: var(--ink); border-radius: 9px; box-shadow: 2px 2px 0 rgba(44, 62, 80, 0.12); font: inherit; font-size: 13px; }
+.fg-zbtn:hover, .fg-zfit:hover { background: var(--coral); color: #fff; }
 .fg-svg { width: 100%; height: auto; display: block; }
 .fg-grid { stroke: var(--rule); stroke-width: 0.6; }
 .fg-axis { stroke: var(--ink-soft); stroke-width: 1.4; }
