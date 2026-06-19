@@ -216,7 +216,10 @@ body {
 .dl-placed.no { fill: #E24B4A; }
 .dl-hint { margin: 14px 2px 0; font-size: 12px; color: var(--coral); }
 .dl-drag { position: fixed; pointer-events: none; background: var(--coral); color: #fff; border-radius: 10px; padding: 7px 13px; font-size: 14px; font-weight: 500; box-shadow: 5px 5px 0 rgba(44, 62, 80, 0.25); transform: translate(-50%, -50%); z-index: 1000; }
-.dl-target-hint { position: fixed; pointer-events: none; transform: translate(-50%, 0); background: var(--navy); color: var(--yellow); font-size: 12px; padding: 3px 9px; border-radius: 8px; z-index: 1000; white-space: nowrap; }
+.dl-loupe { position: fixed; pointer-events: none; width: 150px; height: 150px; border-radius: 16px; overflow: hidden; background: var(--paper); border: 3px solid var(--coral); box-shadow: 5px 5px 0 rgba(44, 62, 80, 0.22); z-index: 1001; }
+.dl-loupe svg { display: block; }
+.dl-loupe-feat { fill: rgba(44, 62, 80, 0.06); stroke: var(--ink-faint); stroke-width: 0.5; }
+.dl-loupe-feat.target { fill: var(--coral-soft); stroke: var(--coral); stroke-width: 1; }
 .tool-score { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
 .tool-score.ok { color: var(--green); }
 

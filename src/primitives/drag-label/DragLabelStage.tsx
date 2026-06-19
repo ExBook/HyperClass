@@ -36,11 +36,14 @@ export function DragLabelStage({ geo, labels, interactive, placements, graded, o
     }
     return m;
   }, [wound, pathGen]);
-  const nameById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const f of wound.features) m.set(f.properties.id, f.properties.name);
-    return m;
-  }, [wound]);
+  // 投影后面积过小的地块(京津沪港澳等)。靠近时给放大镜,而不是报名字。
+  const smallIds = useMemo(() => {
+    const areas = wound.features.map((f) => pathGen.area(f));
+    const mean = areas.reduce((a, b) => a + b, 0) / (areas.length || 1);
+    const s = new Set<string>();
+    wound.features.forEach((f, i) => { if (areas[i] < mean * 0.18) s.add(f.properties.id); });
+    return s;
+  }, [wound, pathGen]);
 
   function toSvg(cx: number, cy: number): [number, number] | null {
     const svg = boardRef.current;
@@ -140,7 +143,21 @@ export function DragLabelStage({ geo, labels, interactive, placements, graded, o
         {drag && (
           <>
             <div className="dl-drag" style={{ left: drag.x, top: drag.y }}>{drag.label.text}</div>
-            {hover && <div className="dl-target-hint" style={{ left: drag.x, top: drag.y + 28 }}>→ {nameById.get(hover)}</div>}
+            {hover && smallIds.has(hover) && (() => {
+              const c = centroids.get(hover);
+              if (!c) return null;
+              const zw = 56;
+              return (
+                <div className="dl-loupe" style={{ left: drag.x + 28, top: Math.max(8, drag.y - 170) }}>
+                  <svg viewBox={`${c[0] - zw / 2} ${c[1] - zw / 2} ${zw} ${zw}`} width={150} height={150}>
+                    {wound.features.map((f) => (
+                      <path key={f.properties.id} d={pathGen(f) ?? ''}
+                        className={`dl-loupe-feat${f.properties.id === hover ? ' target' : ''}`} />
+                    ))}
+                  </svg>
+                </div>
+              );
+            })()}
           </>
         )}
       </div>
