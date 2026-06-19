@@ -307,6 +307,24 @@ body {
 .db-side { background: var(--paper); border-radius: 18px; padding: 18px; box-shadow: var(--hard-shadow); transform: rotate(-0.5deg); }
 @keyframes db-flip { from { transform: rotateY(-88deg); opacity: 0; } to { transform: rotateY(0); opacity: 1; } }
 
+/* ===== lat/lon grid (经纬网定位) ===== */
+.ll { display: flex; flex-direction: column; gap: 16px; }
+.ll-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--paper); border-radius: 14px; padding: 12px 16px; box-shadow: var(--hard-shadow); }
+.ll-read { font-size: 17px; color: var(--ink); }
+.ll-read b { color: var(--coral); }
+.ll-result { font-size: 14px; font-weight: 600; }
+.ll-result.ok { color: var(--green); }
+.ll-result.no { color: #E24B4A; }
+.ll-score { font-size: 14px; color: var(--ink-soft); }
+.ll-board { background: var(--paper); border-radius: 18px; padding: 16px; box-shadow: var(--hard-shadow); }
+.ll-svg { width: 100%; height: auto; display: block; touch-action: none; cursor: crosshair; }
+.ll-grid { stroke: var(--rule); stroke-width: 0.8; }
+.ll-eq, .ll-pm { stroke: var(--coral); stroke-width: 1.6; }
+.ll-cross { stroke: var(--teal); stroke-width: 1; stroke-dasharray: 4 3; }
+.ll-tick { fill: var(--ink-faint); font-size: 11px; }
+.ll-marker { fill: var(--coral); stroke: var(--paper); stroke-width: 2; }
+.ll-target { fill: none; stroke: var(--green); stroke-width: 2.5; }
+
 @media (max-width: 640px) {
   .rg { grid-template-columns: 1fr; }
   .db { grid-template-columns: 1fr; }
