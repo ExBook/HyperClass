@@ -1,6 +1,7 @@
 import type { ToolManifest } from '../core/types';
 import { manifest as randomPicker } from './common/random-picker/manifest';
 import { manifest as randomGroup } from './common/random-group/manifest';
+import { manifest as scoreBoard } from './common/score-board/manifest';
 import { manifest as timer } from './common/timer/manifest';
 import { manifest as chinaProvinces } from './geography/china-provinces/manifest';
 import { manifest as functionGraph } from './math/function-graph/manifest';
@@ -9,6 +10,7 @@ import { manifest as functionGraph } from './math/function-graph/manifest';
 export const tools: ToolManifest[] = [
   randomPicker,
   randomGroup,
+  scoreBoard,
   timer,
   chinaProvinces,
   functionGraph,

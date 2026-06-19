@@ -277,6 +277,26 @@ body {
 .rg-meta { font-size: 12px; color: var(--ink-faint); }
 @keyframes rg-in { from { opacity: 0; transform: translateY(6px); } }
 
+/* ===== score board (小组计分板) ===== */
+.sb { display: flex; flex-direction: column; gap: 18px; }
+.sb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.sb-card { position: relative; background: color-mix(in srgb, var(--gc) 12%, var(--paper)); border-radius: 20px; padding: 16px; box-shadow: var(--hard-shadow); text-align: center; }
+.sb-card.leader { box-shadow: 0 0 0 3px var(--gc), var(--hard-shadow); }
+.sb-crown { position: absolute; top: 10px; right: 12px; color: var(--gc); }
+.sb-name input { width: 100%; border: none; background: transparent; text-align: center; font: inherit; font-size: 15px; font-weight: 600; color: var(--gc); }
+.sb-name input:focus { outline: none; background: var(--paper); border-radius: 8px; }
+.sb-score { height: 84px; display: flex; align-items: center; justify-content: center; }
+.sb-num { font-size: 64px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; animation: hc-pop 0.3s; }
+.sb-btns { display: flex; gap: 8px; justify-content: center; }
+.sb-btns button { flex: 1; border: none; cursor: pointer; font: inherit; font-size: 15px; font-weight: 600; border-radius: 10px; padding: 9px 0; background: var(--paper); color: var(--ink); box-shadow: 2px 2px 0 rgba(44, 62, 80, 0.12); transition: transform 0.12s; }
+.sb-btns button:hover { transform: translate(-1px, -1px); }
+.sb-btns .minus { color: #E24B4A; }
+.sb-btns .plus { color: var(--green); }
+.sb-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--paper); border-radius: 14px; padding: 12px 16px; box-shadow: var(--hard-shadow); }
+.sb-count { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-soft); }
+.sb-count button { width: 30px; height: 30px; border: none; cursor: pointer; background: var(--paper-2); border-radius: 8px; font-size: 18px; color: var(--ink); }
+.sb-count span { min-width: 18px; text-align: center; font-weight: 600; color: var(--ink); }
+
 @media (max-width: 640px) {
   .rg { grid-template-columns: 1fr; }
   .picker { grid-template-columns: 1fr; }
