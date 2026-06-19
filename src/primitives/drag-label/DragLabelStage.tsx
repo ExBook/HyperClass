@@ -6,13 +6,14 @@ import { buildProjection } from './projection';
 
 const W = 800, H = 600;
 
-type PlacedLabel = { id: string; text: string; ax: number; ay: number; x: number; y: number; moved: boolean; small: boolean };
+type LItem = { id: string; text: string; featureId: string };
+type PlacedLabel = { id: string; text: string; featureId: string; ax: number; ay: number; x: number; y: number; moved: boolean; small: boolean };
 
 /**
- * 演示态标签排布(轻量避让):大地块标在质心;放不下就按候选偏移移开并画引线;
- * 小地块(京津沪港澳等)画一个点标出位置,名字引到附近空白处。
+ * 标签排布(轻量避让),演示态与练习态共用:大地块标在所在 feature 的质心;放不下就按
+ * 候选偏移移开并画引线;小地块(京津沪港澳等)画一个点标出位置,名字引到附近空白处。
  */
-function layoutLabels(labels: Label[], centroids: Map<string, [number, number]>, smallIds: Set<string>): PlacedLabel[] {
+function layoutItems(items: LItem[], centroids: Map<string, [number, number]>, smallIds: Set<string>): PlacedLabel[] {
   const FH = 15;
   const CAND: [number, number][] = [
     [0, 0], [0, -17], [0, 17], [24, -13], [-24, -13], [28, 3], [-28, 3],
@@ -23,11 +24,11 @@ function layoutLabels(labels: Label[], centroids: Map<string, [number, number]>,
   const boxes: { x: number; y: number; w: number; h: number }[] = [];
   const out: PlacedLabel[] = [];
   // 大地块先排(占住质心),小地块后排(更可能被推开)
-  const order = [...labels].sort((a, b) => (smallIds.has(a.targetFeatureId) ? 1 : 0) - (smallIds.has(b.targetFeatureId) ? 1 : 0));
-  for (const l of order) {
-    const c = centroids.get(l.targetFeatureId);
+  const order = [...items].sort((a, b) => (smallIds.has(a.featureId) ? 1 : 0) - (smallIds.has(b.featureId) ? 1 : 0));
+  for (const it of order) {
+    const c = centroids.get(it.featureId);
     if (!c) continue;
-    const w = l.text.length * 12 + 4;
+    const w = it.text.length * 12 + 4;
     let chosen = { x: c[0], y: c[1] };
     for (const [dx, dy] of CAND) {
       const box = { x: c[0] + dx, y: c[1] + dy, w, h: FH };
@@ -35,8 +36,8 @@ function layoutLabels(labels: Label[], centroids: Map<string, [number, number]>,
     }
     boxes.push({ x: chosen.x, y: chosen.y, w, h: FH });
     out.push({
-      id: l.id, text: l.text, ax: c[0], ay: c[1], x: chosen.x, y: chosen.y,
-      moved: Math.hypot(chosen.x - c[0], chosen.y - c[1]) > 8, small: smallIds.has(l.targetFeatureId),
+      id: it.id, text: it.text, featureId: it.featureId, ax: c[0], ay: c[1], x: chosen.x, y: chosen.y,
+      moved: Math.hypot(chosen.x - c[0], chosen.y - c[1]) > 8, small: smallIds.has(it.featureId),
     });
   }
   return out;
@@ -81,7 +82,17 @@ export function DragLabelStage({ geo, labels, interactive, placements, graded, o
     return s;
   }, [wound, pathGen]);
 
-  const presentLayout = useMemo(() => layoutLabels(labels, centroids, smallIds), [labels, centroids, smallIds]);
+  const presentLayout = useMemo(
+    () => layoutItems(labels.map((l) => ({ id: l.id, text: l.text, featureId: l.targetFeatureId })), centroids, smallIds),
+    [labels, centroids, smallIds],
+  );
+  const practiceLayout = useMemo(
+    () => layoutItems(
+      labels.filter((l) => placements[l.id]).map((l) => ({ id: l.id, text: l.text, featureId: placements[l.id] })),
+      centroids, smallIds,
+    ),
+    [labels, placements, centroids, smallIds],
+  );
 
   function toSvg(cx: number, cy: number): [number, number] | null {
     const svg = boardRef.current;
@@ -171,13 +182,16 @@ export function DragLabelStage({ geo, labels, interactive, placements, graded, o
             else if (lab) cls += graded ? (isCorrect(lab) ? ' correct' : ' wrong') : ' assigned';
             return <path key={id} d={pathGen(f) ?? ''} className={cls} />;
           })}
-          {[...featureToLabel.entries()].map(([fid, lab]) => {
-            const c = centroids.get(fid);
-            if (!c) return null;
-            const lc = `dl-placed${graded ? (isCorrect(lab) ? ' ok' : ' no') : ' set'}`;
+          {practiceLayout.map((p) => {
+            const lab = labels.find((l) => l.id === p.id);
+            const ok = graded && lab ? placements[p.id] === lab.targetFeatureId : false;
+            const cls = `dl-placed${graded ? (ok ? ' ok' : ' no') : ' set'}`;
             return (
-              <text key={lab.id} x={c[0]} y={c[1]} className={lc} textAnchor="middle"
-                onClick={() => !graded && onUnassign(lab.id)}>{lab.text}</text>
+              <g key={p.id}>
+                {p.small && <circle cx={p.ax} cy={p.ay} r={3} className={`dl-dot${graded ? (ok ? ' ok' : ' no') : ''}`} />}
+                {p.moved && <line x1={p.ax} y1={p.ay} x2={p.x} y2={p.y} className="dl-leader" />}
+                <text x={p.x} y={p.y} className={cls} textAnchor="middle" onClick={() => !graded && onUnassign(p.id)}>{p.text}</text>
+              </g>
             );
           })}
         </svg>

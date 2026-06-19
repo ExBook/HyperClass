@@ -215,6 +215,8 @@ body {
 .dl-placed.ok { fill: var(--green); }
 .dl-placed.no { fill: #E24B4A; }
 .dl-dot { fill: var(--coral); }
+.dl-dot.ok { fill: var(--green); }
+.dl-dot.no { fill: #E24B4A; }
 .dl-leader { stroke: var(--ink-faint); stroke-width: 0.6; }
 .dl-hint { margin: 14px 2px 0; font-size: 12px; color: var(--coral); }
 .dl-drag { position: fixed; pointer-events: none; background: var(--coral); color: #fff; border-radius: 10px; padding: 7px 13px; font-size: 14px; font-weight: 500; box-shadow: 5px 5px 0 rgba(44, 62, 80, 0.25); transform: translate(-50%, -50%); z-index: 1000; }
