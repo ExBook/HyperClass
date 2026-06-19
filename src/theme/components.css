@@ -234,10 +234,33 @@ body {
 .hc-overlay-card h2 { margin: 0; font-size: 24px; color: var(--ink); }
 .hc-overlay-card p { margin: 0; font-size: 14px; color: var(--ink-soft); }
 
+/* ===== function graph (函数图像) ===== */
+.fg { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.fg-plot { background: var(--paper); border-radius: 22px; padding: 18px; box-shadow: var(--hard-shadow); }
+.fg-eq { text-align: center; font-size: 30px; font-weight: 700; color: var(--ink); margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.fg-svg { width: 100%; height: auto; display: block; }
+.fg-grid { stroke: var(--rule); stroke-width: 0.6; }
+.fg-axis { stroke: var(--ink-soft); stroke-width: 1.4; }
+.fg-tick { fill: var(--ink-faint); font-size: 11px; }
+.fg-curve { fill: none; stroke: #378ADD; stroke-width: 3; stroke-linejoin: round; }
+.fg-sym { stroke: #378ADD; stroke-width: 1; stroke-dasharray: 5 4; opacity: 0.5; }
+.fg-pt { fill: var(--coral); stroke: var(--paper); stroke-width: 2; }
+.fg-controls { background: var(--paper); border-radius: 18px; padding: 18px; box-shadow: var(--hard-shadow); display: flex; flex-direction: column; gap: 16px; }
+.fg-row { display: flex; align-items: center; gap: 12px; }
+.fg-k { font-size: 16px; font-weight: 600; font-style: italic; color: #378ADD; width: 18px; }
+.fg-vv { font-size: 14px; color: var(--ink); width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+.fg-range { -webkit-appearance: none; appearance: none; flex: 1; height: 6px; border-radius: 3px; background: var(--paper-2); outline: none; }
+.fg-range::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #378ADD; cursor: pointer; box-shadow: 2px 2px 0 rgba(44, 62, 80, 0.2); }
+.fg-range::-moz-range-thumb { width: 20px; height: 20px; border: none; border-radius: 50%; background: #378ADD; cursor: pointer; }
+.fg-feats { border-top: 2px dashed var(--rule); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--ink); }
+.fg-feats div { display: flex; justify-content: space-between; }
+.fg-feats span { color: var(--ink-faint); }
+
 @media (max-width: 640px) {
   .picker { grid-template-columns: 1fr; }
   .picker-name { font-size: 44px; }
   .timer-ring { width: 240px; height: 240px; }
   .timer-time { font-size: 56px; }
   .dl { grid-template-columns: 1fr; }
+  .fg { grid-template-columns: 1fr; }
 }
