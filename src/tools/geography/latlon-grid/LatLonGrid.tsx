@@ -51,9 +51,10 @@ export function LatLonGrid() {
       svgRef.current?.setPointerCapture(e.pointerId);
       setMarker(toCoord(e.clientX, e.clientY));
     } else if (result === null) {
-      const g = toCoord(e.clientX, e.clientY);
+      const raw = toCoord(e.clientX, e.clientY);
+      const g = { lon: Math.round(raw.lon / 5) * 5, lat: Math.round(raw.lat / 5) * 5 }; // 吸附到最近 5°
       setGuess(g);
-      const ok = Math.abs(g.lon - target.lon) <= 8 && Math.abs(g.lat - target.lat) <= 8;
+      const ok = Math.abs(g.lon - target.lon) <= 5 && Math.abs(g.lat - target.lat) <= 5;
       setResult(ok);
       setScore((s) => ({ right: s.right + (ok ? 1 : 0), total: s.total + 1 }));
       if (ok) { beep(880, 0.1); window.setTimeout(() => beep(1175, 0.14), 90); } else beep(200, 0.16);
@@ -65,8 +66,8 @@ export function LatLonGrid() {
   function chooseMode(m: Mode) { setMode(m); setGuess(null); setResult(null); }
   function toggleSound() { setSound((s) => { const v = !s; save(KEY, { sound: v }); return v; }); }
 
-  const lons: number[] = []; for (let l = -180; l <= 180; l += 30) lons.push(l);
-  const lats: number[] = []; for (let l = -90; l <= 90; l += 30) lats.push(l);
+  const lons: number[] = []; for (let l = -180; l <= 180; l += 10) lons.push(l);
+  const lats: number[] = []; for (let l = -90; l <= 90; l += 10) lats.push(l);
   const axisLon = [-180, -120, -60, 0, 60, 120, 180];
   const axisLat = [90, 60, 30, 0, -30, -60, -90];
 
@@ -94,8 +95,8 @@ export function LatLonGrid() {
       <div className="ll-board">
         <svg ref={svgRef} viewBox={`-46 -18 ${W + 76} ${H + 52}`} className="ll-svg"
           onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} xmlns="http://www.w3.org/2000/svg">
-          {lons.map((l) => <line key={`o${l}`} x1={sx(l)} y1={0} x2={sx(l)} y2={H} className={l === 0 ? 'll-pm' : 'll-grid'} />)}
-          {lats.map((l) => <line key={`a${l}`} x1={0} y1={sy(l)} x2={W} y2={sy(l)} className={l === 0 ? 'll-eq' : 'll-grid'} />)}
+          {lons.map((l) => <line key={`o${l}`} x1={sx(l)} y1={0} x2={sx(l)} y2={H} className={l === 0 ? 'll-pm' : l % 30 === 0 ? 'll-major' : 'll-grid'} />)}
+          {lats.map((l) => <line key={`a${l}`} x1={0} y1={sy(l)} x2={W} y2={sy(l)} className={l === 0 ? 'll-eq' : l % 30 === 0 ? 'll-major' : 'll-grid'} />)}
           {axisLon.map((l) => <text key={`lx${l}`} x={sx(l)} y={H + 18} className="ll-tick" textAnchor="middle">{l === 0 ? '0°' : l > 0 ? `${l}°E` : `${-l}°W`}</text>)}
           {axisLat.map((l) => <text key={`ly${l}`} x={-8} y={sy(l) + 4} className="ll-tick" textAnchor="end">{l === 0 ? '0°' : l > 0 ? `${l}°N` : `${-l}°S`}</text>)}
           {mode === 'present' && <>
