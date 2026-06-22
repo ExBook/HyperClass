@@ -4,7 +4,7 @@ import { ensureWinding } from '../../../primitives/drag-label/geo';
 import { buildProjection } from '../../../primitives/drag-label/projection';
 import type { FeatureMap } from '../../../primitives/drag-label/types';
 import { Btn, Icon } from '../../../app/ui';
-import { CLIMATES, PROVINCE_CLIMATE } from './climate';
+import { CLIMATES, RENDER_ORDER, byId, zoneAt } from './climate';
 
 const MAP_URL = import.meta.env.BASE_URL + 'content/geography/china-provinces/map.json';
 const W = 800, H = 600;
@@ -22,27 +22,15 @@ export function ChinaClimate() {
   const [graded, setGraded] = useState(false);
   const [drag, setDrag] = useState<{ id: string; name: string; x: number; y: number } | null>(null);
   const [hover, setHover] = useState<string | null>(null);
+  const [sound, setSound] = useState(true);
   const boardRef = useRef<SVGSVGElement | null>(null);
   const audio = useRef<AudioContext | null>(null);
-  const [sound, setSound] = useState(true);
 
   useEffect(() => { let on = true; fetch(MAP_URL).then((r) => r.json()).then((d) => { if (on) setGeo(d as FeatureMap); }).catch(() => {}); return () => { on = false; }; }, []);
 
   const wound = useMemo(() => (geo ? ensureWinding(geo) : null), [geo]);
-  const pathGen = useMemo(() => (wound ? geoPath(buildProjection(wound, W, H)) : null), [wound]);
-  const featCentroids = useMemo(() => {
-    const m = new Map<string, [number, number]>();
-    if (wound && pathGen) for (const f of wound.features) { const c = pathGen.centroid(f); if (Number.isFinite(c[0])) m.set(f.properties.id, c); }
-    return m;
-  }, [wound, pathGen]);
-  const regionCentroid = useMemo(() => {
-    const m = new Map<string, [number, number]>();
-    for (const cl of CLIMATES) {
-      const pts = Object.keys(PROVINCE_CLIMATE).filter((p) => PROVINCE_CLIMATE[p] === cl.id).map((p) => featCentroids.get(p)).filter(Boolean) as [number, number][];
-      if (pts.length) m.set(cl.id, [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length]);
-    }
-    return m;
-  }, [featCentroids]);
+  const proj = useMemo(() => (wound ? buildProjection(wound, W, H) : null), [wound]);
+  const pathGen = useMemo(() => (proj ? geoPath(proj) : null), [proj]);
 
   function beep(freq: number, dur = 0.08) {
     if (!sound) return;
@@ -56,30 +44,27 @@ export function ChinaClimate() {
     } catch { /* audio unavailable */ }
   }
 
-  function toSvg(cx: number, cy: number): [number, number] | null {
-    const svg = boardRef.current; if (!svg) return null;
-    const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy;
+  function clickZone(clientX: number, clientY: number): string | null {
+    const svg = boardRef.current; if (!svg || !proj) return null;
+    const pt = svg.createSVGPoint(); pt.x = clientX; pt.y = clientY;
     const ctm = svg.getScreenCTM(); if (!ctm) return null;
-    const p = pt.matrixTransform(ctm.inverse()); return [p.x, p.y];
-  }
-  function nearestClimate(sx: number, sy: number): string | null {
-    let best: string | null = null, bd = Infinity;
-    for (const [id, [x, y]] of featCentroids) { const d = (x - sx) ** 2 + (y - sy) ** 2; if (d < bd) { bd = d; best = id; } }
-    return best ? PROVINCE_CLIMATE[best] ?? null : null;
+    const p = pt.matrixTransform(ctm.inverse());
+    const ll = proj.invert?.([p.x, p.y]); if (!ll) return null;
+    return zoneAt(ll[0], ll[1]);
   }
 
   useEffect(() => {
     if (!drag) return;
-    const move = (e: PointerEvent) => { setDrag((d) => (d ? { ...d, x: e.clientX, y: e.clientY } : null)); const s = toSvg(e.clientX, e.clientY); if (s) setHover(nearestClimate(s[0], s[1])); };
-    const up = (e: PointerEvent) => { const s = toSvg(e.clientX, e.clientY); const t = s ? nearestClimate(s[0], s[1]) : null; if (t) assign(drag.id, t); setDrag(null); setHover(null); };
+    const move = (e: PointerEvent) => { setDrag((d) => (d ? { ...d, x: e.clientX, y: e.clientY } : null)); setHover(clickZone(e.clientX, e.clientY)); };
+    const up = (e: PointerEvent) => { const z = clickZone(e.clientX, e.clientY); if (z) assign(drag.id, z); setDrag(null); setHover(null); };
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
     return () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drag, featCentroids]);
+  }, [drag, proj]);
 
-  function assign(labelId: string, climateId: string) {
+  function assign(labelId: string, zoneId: string) {
     if (graded) return;
-    setPlacements((prev) => { const n = { ...prev }; for (const k of Object.keys(n)) if (n[k] === climateId) delete n[k]; n[labelId] = climateId; return n; });
+    setPlacements((prev) => { const n = { ...prev }; for (const k of Object.keys(n)) if (n[k] === zoneId) delete n[k]; n[labelId] = zoneId; return n; });
     beep(520, 0.05);
   }
   function unassign(labelId: string) { if (graded) return; setPlacements((prev) => { const n = { ...prev }; delete n[labelId]; return n; }); }
@@ -93,18 +78,23 @@ export function ChinaClimate() {
   }
   function redo() { setPlacements({}); setGraded(false); }
 
-  if (!geo || !wound || !pathGen) return <div className="hc-loading">地图加载中…</div>;
+  if (!geo || !wound || !pathGen || !proj) return <div className="hc-loading">地图加载中…</div>;
 
   const isPractice = mode === 'practice';
+  const showColors = !isPractice || graded;
   const unplaced = CLIMATES.filter((cl) => !(cl.id in placements));
   const placedCount = Object.keys(placements).length;
   const correctCount = CLIMATES.filter((cl) => placements[cl.id] === cl.id).length;
   const allCorrect = graded && correctCount === CLIMATES.length;
+  // 直接投影顶点画平面多边形,避免 geoPath 球面卷绕把多边形反转
+  const zonePoints = (id: string) => byId(id)!.ring
+    .map(([lon, lat]) => { const p = proj([lon, lat]) as [number, number]; return `${p[0].toFixed(1)},${p[1].toFixed(1)}`; })
+    .join(' ');
 
-  // 演示态:每个气候标在自己区域;练习态:已放置标签标在所分到的区域
+  const chinaPath = wound.features.map((f) => pathGen(f) ?? '').join(' ');
   const shownLabels = isPractice
-    ? Object.entries(placements).map(([labelId, climId]) => ({ labelId, climId }))
-    : CLIMATES.map((cl) => ({ labelId: cl.id, climId: cl.id }));
+    ? Object.entries(placements).map(([labelId, zoneId]) => ({ labelId, zoneId }))
+    : CLIMATES.map((cl) => ({ labelId: cl.id, zoneId: cl.id }));
 
   return (
     <div className="tool-wrap">
@@ -128,29 +118,24 @@ export function ChinaClimate() {
             <ul className="dl-tags">
               {unplaced.map((cl) => (
                 <li key={cl.id} className={`dl-tag${drag?.id === cl.id ? ' dragging' : ''}`}
-                  style={{ borderLeft: `4px solid ${cl.color}` }}
                   onPointerDown={(e) => setDrag({ id: cl.id, name: cl.name, x: e.clientX, y: e.clientY })}>{cl.name}</li>
               ))}
             </ul>
+            {unplaced.length === 0 && <p className="dl-hint">都放好了,点「提交批改」</p>}
           </div>
         )}
         <div className="dl-board">
           <svg ref={boardRef} className="dl-map" viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
-            {wound.features.map((f) => {
-              const cid = PROVINCE_CLIMATE[f.properties.id];
-              const cl = CLIMATES.find((c) => c.id === cid);
-              const lit = drag && hover === cid;
-              return <path key={f.properties.id} d={pathGen(f) ?? ''}
-                fill={cl ? rgba(cl.color, lit ? 0.6 : 0.3) : 'rgba(44,62,80,0.05)'}
-                stroke={cl ? cl.color : 'var(--ink-faint)'} strokeWidth={lit ? 1.6 : 0.7} />;
-            })}
-            {shownLabels.map(({ labelId, climId }) => {
-              const c = regionCentroid.get(climId); if (!c) return null;
-              const cl = CLIMATES.find((x) => x.id === labelId);
-              const ok = graded ? labelId === climId : null; // label matches the region it's on
-              const fill = graded ? (ok ? 'var(--green)' : '#E24B4A') : 'var(--ink)';
-              return <text key={labelId} x={c[0]} y={c[1]} className="dl-placed set" fill={fill} textAnchor="middle"
-                onClick={() => isPractice && !graded && unassign(labelId)}>{cl?.name}</text>;
+            <defs><clipPath id="cnclip"><path d={chinaPath} /></clipPath></defs>
+            {wound.features.map((f) => <path key={f.properties.id} d={pathGen(f) ?? ''} fill="rgba(44,62,80,0.05)" stroke="var(--ink-faint)" strokeWidth={0.6} />)}
+            {showColors && <g clipPath="url(#cnclip)">{RENDER_ORDER.map((id) => <polygon key={id} points={zonePoints(id)} fill={rgba(byId(id)!.color, 0.5)} />)}</g>}
+            {!showColors && drag && hover && <g clipPath="url(#cnclip)"><polygon points={zonePoints(hover)} fill="rgba(255,107,107,0.28)" stroke="var(--coral)" strokeWidth={1.8} /></g>}
+            {shownLabels.map(({ labelId, zoneId }) => {
+              const cl = byId(labelId)!;
+              const pos = proj(byId(zoneId)!.labelAt) as [number, number];
+              const fill = graded ? (labelId === zoneId ? 'var(--green)' : '#E24B4A') : 'var(--ink)';
+              return <text key={labelId} x={pos[0]} y={pos[1]} className="dl-placed set" fill={fill} textAnchor="middle"
+                onClick={() => isPractice && !graded && unassign(labelId)}>{cl.name}</text>;
             })}
           </svg>
           {drag && <div className="dl-drag" style={{ left: drag.x, top: drag.y }}>{drag.name}</div>}
