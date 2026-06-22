@@ -6,6 +6,7 @@ import { manifest as drawBox } from './common/draw-box/manifest';
 import { manifest as timer } from './common/timer/manifest';
 import { manifest as chinaProvinces } from './geography/china-provinces/manifest';
 import { manifest as latlonGrid } from './geography/latlon-grid/manifest';
+import { manifest as chinaClimate } from './geography/china-climate/manifest';
 import { manifest as functionGraph } from './math/function-graph/manifest';
 
 /** 工具注册中心。新增工具 = import 它的 manifest 并加进这个数组。 */
@@ -17,6 +18,7 @@ export const tools: ToolManifest[] = [
   timer,
   chinaProvinces,
   latlonGrid,
+  chinaClimate,
   functionGraph,
 ];
 
