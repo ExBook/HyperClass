@@ -145,7 +145,22 @@ export function ChinaClimate() {
               <text key={`l${b.id}`} x={p[0]} y={p[1]} textAnchor="middle"
                 style={{ fontSize: 11, fill: 'var(--ink-soft)', paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.85)', strokeWidth: 3 }}>{b.name}</text>
             ); })}
-            {!showColors && drag && hover && <g clipPath="url(#cnclip)"><polygon points={zonePoints(hover)} fill="rgba(255,107,107,0.28)" stroke="var(--coral)" strokeWidth={1.8} /></g>}
+            {/* 高亮"实际可见"的气候带区域:走画家算法(目标带为白、压在其上的带为黑)得到精确边界区 */}
+            {!showColors && drag && hover && (
+              <>
+                <defs>
+                  <mask id="cn-hl">
+                    <polygon points={zonePoints(hover)} fill="#fff" />
+                    {RENDER_ORDER.slice(RENDER_ORDER.indexOf(hover) + 1).map((id) => (
+                      <polygon key={id} points={zonePoints(id)} fill="#000" />
+                    ))}
+                  </mask>
+                </defs>
+                <g clipPath="url(#cnclip)">
+                  <rect x={0} y={0} width={W} height={H} fill="rgba(255,107,107,0.34)" mask="url(#cn-hl)" />
+                </g>
+              </>
+            )}
             {shownLabels.map(({ labelId, zoneId }) => {
               const cl = byId(labelId)!;
               const pos = proj(byId(zoneId)!.labelAt) as [number, number];
