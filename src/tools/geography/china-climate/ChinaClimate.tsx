@@ -4,15 +4,17 @@ import { ensureWinding } from '../../../primitives/drag-label/geo';
 import { buildProjection } from '../../../primitives/drag-label/projection';
 import type { FeatureMap } from '../../../primitives/drag-label/types';
 import { Btn, Icon } from '../../../app/ui';
-import { CLIMATES, RENDER_ORDER, byId, zoneAt } from './climate';
+import { BOUNDARIES, CLIMATES, RENDER_ORDER, byId, zoneAt } from './climate';
 
 const MAP_URL = import.meta.env.BASE_URL + 'content/geography/china-provinces/map.json';
 const W = 800, H = 600;
 type Mode = 'present' | 'practice';
 
-function rgba(hex: string, a: number) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+// 不透明柔和色:把气候色向奶油底色混合,得到实色(上层干净盖下层,绝不透叠)
+function tint(hex: string) {
+  const n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const k = 0.45, mix = (c: number, d: number) => Math.round(c * (1 - k) + d * k);
+  return `rgb(${mix(r, 0xF4)}, ${mix(g, 0xED)}, ${mix(b, 0xD9)})`;
 }
 
 export function ChinaClimate() {
@@ -92,11 +94,9 @@ export function ChinaClimate() {
     .join(' ');
 
   const chinaPath = wound.features.map((f) => pathGen(f) ?? '').join(' ');
-  // 北回归线参考(~23.5°N),跟随投影微弯,裁剪到国界内
-  const tropicLine = [98, 102, 106, 110, 114, 118, 122]
-    .map((lon) => { const p = proj([lon, 23.5]) as [number, number]; return `${p[0].toFixed(1)},${p[1].toFixed(1)}`; })
+  const projPts = (pts: [number, number][]) => pts
+    .map(([lon, lat]) => { const p = proj([lon, lat]) as [number, number]; return `${p[0].toFixed(1)},${p[1].toFixed(1)}`; })
     .join(' ');
-  const tropicLabel = proj([121.5, 23.5]) as [number, number];
   const shownLabels = isPractice
     ? Object.entries(placements).map(([labelId, zoneId]) => ({ labelId, zoneId }))
     : CLIMATES.map((cl) => ({ labelId: cl.id, zoneId: cl.id }));
@@ -133,12 +133,18 @@ export function ChinaClimate() {
           <svg ref={boardRef} className="dl-map" viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
             <defs><clipPath id="cnclip"><path d={chinaPath} /></clipPath></defs>
             {wound.features.map((f) => <path key={f.properties.id} d={pathGen(f) ?? ''} fill="rgba(44,62,80,0.05)" stroke="var(--ink-faint)" strokeWidth={0.6} />)}
-            {showColors && <g clipPath="url(#cnclip)">{RENDER_ORDER.map((id) => <polygon key={id} points={zonePoints(id)} fill={rgba(byId(id)!.color, 0.5)} />)}</g>}
-            {/* 气候色块之上再描省界,看清各省所属气候带 */}
-            {showColors && <g clipPath="url(#cnclip)" pointerEvents="none">{wound.features.map((f) => <path key={`b${f.properties.id}`} d={pathGen(f) ?? ''} fill="none" stroke="rgba(44,62,80,0.22)" strokeWidth={0.5} />)}</g>}
-            {/* 北回归线参考虚线 */}
-            {showColors && <g clipPath="url(#cnclip)" pointerEvents="none"><polyline points={tropicLine} fill="none" stroke="var(--ink)" strokeWidth={1} strokeDasharray="5 4" opacity={0.45} /></g>}
-            {showColors && <text x={tropicLabel[0] + 6} y={tropicLabel[1] - 4} className="dl-tick" fill="var(--ink-soft)" textAnchor="start" style={{ fontSize: 11 }}>北回归线</text>}
+            {/* 不透明实色填充:上层干净盖住下层,绝不透叠 */}
+            {showColors && <g clipPath="url(#cnclip)">{RENDER_ORDER.map((id) => <polygon key={id} points={zonePoints(id)} fill={tint(byId(id)!.color)} />)}</g>}
+            {/* 实色之上描省界,看清各省所属气候带 */}
+            {showColors && <g clipPath="url(#cnclip)" pointerEvents="none">{wound.features.map((f) => <path key={`b${f.properties.id}`} d={pathGen(f) ?? ''} fill="none" stroke="rgba(44,62,80,0.18)" strokeWidth={0.5} />)}</g>}
+            {/* 明确的气候分界线(北回归线 / 秦岭—淮河 / 季风区界 / 青藏高原边缘) */}
+            {showColors && <g clipPath="url(#cnclip)" pointerEvents="none">{BOUNDARIES.map((b) => (
+              <polyline key={b.id} points={projPts(b.pts)} fill="none" stroke="var(--ink)" strokeWidth={1.8} strokeOpacity={0.62} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={b.dash ? '6 4' : undefined} />
+            ))}</g>}
+            {showColors && BOUNDARIES.map((b) => { const p = proj(b.labelAt) as [number, number]; return (
+              <text key={`l${b.id}`} x={p[0]} y={p[1]} textAnchor="middle"
+                style={{ fontSize: 11, fill: 'var(--ink-soft)', paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.85)', strokeWidth: 3 }}>{b.name}</text>
+            ); })}
             {!showColors && drag && hover && <g clipPath="url(#cnclip)"><polygon points={zonePoints(hover)} fill="rgba(255,107,107,0.28)" stroke="var(--coral)" strokeWidth={1.8} /></g>}
             {shownLabels.map(({ labelId, zoneId }) => {
               const cl = byId(labelId)!;
