@@ -92,6 +92,11 @@ export function ChinaClimate() {
     .join(' ');
 
   const chinaPath = wound.features.map((f) => pathGen(f) ?? '').join(' ');
+  // 北回归线参考(~23.5°N),跟随投影微弯,裁剪到国界内
+  const tropicLine = [98, 102, 106, 110, 114, 118, 122]
+    .map((lon) => { const p = proj([lon, 23.5]) as [number, number]; return `${p[0].toFixed(1)},${p[1].toFixed(1)}`; })
+    .join(' ');
+  const tropicLabel = proj([121.5, 23.5]) as [number, number];
   const shownLabels = isPractice
     ? Object.entries(placements).map(([labelId, zoneId]) => ({ labelId, zoneId }))
     : CLIMATES.map((cl) => ({ labelId: cl.id, zoneId: cl.id }));
@@ -129,6 +134,11 @@ export function ChinaClimate() {
             <defs><clipPath id="cnclip"><path d={chinaPath} /></clipPath></defs>
             {wound.features.map((f) => <path key={f.properties.id} d={pathGen(f) ?? ''} fill="rgba(44,62,80,0.05)" stroke="var(--ink-faint)" strokeWidth={0.6} />)}
             {showColors && <g clipPath="url(#cnclip)">{RENDER_ORDER.map((id) => <polygon key={id} points={zonePoints(id)} fill={rgba(byId(id)!.color, 0.5)} />)}</g>}
+            {/* 气候色块之上再描省界,看清各省所属气候带 */}
+            {showColors && <g clipPath="url(#cnclip)" pointerEvents="none">{wound.features.map((f) => <path key={`b${f.properties.id}`} d={pathGen(f) ?? ''} fill="none" stroke="rgba(44,62,80,0.22)" strokeWidth={0.5} />)}</g>}
+            {/* 北回归线参考虚线 */}
+            {showColors && <g clipPath="url(#cnclip)" pointerEvents="none"><polyline points={tropicLine} fill="none" stroke="var(--ink)" strokeWidth={1} strokeDasharray="5 4" opacity={0.45} /></g>}
+            {showColors && <text x={tropicLabel[0] + 6} y={tropicLabel[1] - 4} className="dl-tick" fill="var(--ink-soft)" textAnchor="start" style={{ fontSize: 11 }}>北回归线</text>}
             {!showColors && drag && hover && <g clipPath="url(#cnclip)"><polygon points={zonePoints(hover)} fill="rgba(255,107,107,0.28)" stroke="var(--coral)" strokeWidth={1.8} /></g>}
             {shownLabels.map(({ labelId, zoneId }) => {
               const cl = byId(labelId)!;

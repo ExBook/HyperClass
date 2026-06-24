@@ -39,10 +39,13 @@ export function LatLonGrid() {
   }
 
   function toCoord(clientX: number, clientY: number) {
-    const r = svgRef.current!.getBoundingClientRect();
-    const x = (clientX - r.left) / r.width * W;
-    const y = (clientY - r.top) / r.height * H;
-    return { lon: clamp(x / W * 360 - 180, -180, 180), lat: clamp(90 - y / H * 180, -90, 90) };
+    // 用 SVG 的屏幕变换矩阵反算到 viewBox 用户坐标,正确处理 viewBox 偏移/缩放与留白
+    const svg = svgRef.current!;
+    const pt = svg.createSVGPoint(); pt.x = clientX; pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { lon: 0, lat: 0 };
+    const p = pt.matrixTransform(ctm.inverse());
+    return { lon: clamp(p.x / W * 360 - 180, -180, 180), lat: clamp(90 - p.y / H * 180, -90, 90) };
   }
 
   function onDown(e: React.PointerEvent) {
