@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import {
   type Icon as TablerIcon,
@@ -7,7 +8,7 @@ import {
   IconWorld, IconScale, IconMusic, IconPalette, IconRun, IconDeviceDesktop, IconMap2,
   IconCircleCheck, IconUsersGroup, IconTrophy, IconCrown, IconArrowBackUp, IconCards,
   IconGridDots, IconCloudRain, IconQuestionMark, IconDice, IconChartPie, IconMoodSmile,
-  IconMail, IconSend, IconBulb,
+  IconMail, IconSend, IconBulb, IconCopy,
 } from '@tabler/icons-react';
 
 const ICONS: Record<string, TablerIcon> = {
@@ -22,7 +23,7 @@ const ICONS: Record<string, TablerIcon> = {
   'users-group': IconUsersGroup, trophy: IconTrophy, crown: IconCrown, 'arrow-back-up': IconArrowBackUp,
   cards: IconCards, 'grid-dots': IconGridDots, 'cloud-rain': IconCloudRain,
   dice: IconDice, 'chart-pie': IconChartPie, 'mood-smile': IconMoodSmile,
-  mail: IconMail, send: IconSend, bulb: IconBulb,
+  mail: IconMail, send: IconSend, bulb: IconBulb, copy: IconCopy,
 };
 
 export function Icon(
@@ -53,19 +54,30 @@ export const HC_EMAIL = 'hyperclass@163.com';
 export function ContactBanner(
   { subject, variant = 'banner' }: { subject?: string; variant?: 'banner' | 'card' },
 ) {
+  const [copied, setCopied] = useState(false);
   const subjectLine = subject ? `HyperClass ${subject}工具建议` : 'HyperClass 工具建议';
   const href = `mailto:${HC_EMAIL}?subject=${encodeURIComponent(subjectLine)}`
     + `&body=${encodeURIComponent('我想要的工具:\n\n使用场景 / 年级学科:\n\n')}`;
   const title = subject ? `没有想要的${subject}工具?` : '没有你想要的工具?';
+  function copy() {
+    navigator.clipboard?.writeText(HC_EMAIL)
+      .then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1600); })
+      .catch(() => {});
+  }
   return (
-    <a className={`contact contact--${variant}`} href={href}>
+    <div className={`contact contact--${variant}`}>
       <div className="contact-ic"><Icon name="bulb" size={22} /></div>
       <div className="contact-text">
         <div className="contact-title">{title}</div>
         <div className="contact-sub">把需求告诉开发者,我们来做 · {HC_EMAIL}</div>
       </div>
-      <span className="contact-btn"><Icon name="send" size={16} /> 联系开发者</span>
-    </a>
+      <div className="contact-actions">
+        <button className={`contact-copy${copied ? ' done' : ''}`} onClick={copy} aria-label="复制邮箱">
+          <Icon name={copied ? 'circle-check' : 'copy'} size={15} /> {copied ? '已复制' : '复制邮箱'}
+        </button>
+        <a className="contact-btn" href={href}><Icon name="send" size={16} /> 联系开发者</a>
+      </div>
+    </div>
   );
 }
 
