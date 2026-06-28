@@ -1,7 +1,7 @@
 name: release
 
 # 打 v* 标签即触发:为 macOS(Apple Silicon + Intel)、Windows、Linux 构建
-# 安装包,并自动创建 GitHub Release 把产物附上。
+# 安装包,同时打包浏览器扩展,并自动创建 GitHub Release 把产物附上。
 on:
   push:
     tags:
@@ -72,8 +72,42 @@ jobs:
             - **macOS (Intel)**:`*_x64.dmg`
             - **Windows**:`*_x64-setup.exe` 或 `*_x64_en-US.msi`
             - **Linux**:`*.AppImage` 或 `*.deb`
+            - **浏览器扩展**:`*_browser-extension.zip`(解压后加载 `dist-ext` 内容)
 
             > 安装包未做代码签名,首次打开如遇系统拦截:macOS 右键「打开」,Windows 选「更多信息 → 仍要运行」。
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
+  build-browser-extension:
+    name: Browser extension
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build browser extension
+        run: npm run build:ext
+
+      - name: Pack browser extension
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          archive="HyperClass_${version}_browser-extension.zip"
+          (cd dist-ext && zip -r "../${archive}" .)
+          echo "EXTENSION_ARCHIVE=${archive}" >> "$GITHUB_ENV"
+
+      - name: Upload browser extension to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${GITHUB_REF_NAME}" "${EXTENSION_ARCHIVE}" --repo "${GITHUB_REPOSITORY}" --clobber

@@ -423,6 +423,9 @@ main {
   background: #fbf5e6;
   transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
+.download-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
 .download-card:hover {
   transform: translate(-1px, -1px);
   border-color: var(--coral);
