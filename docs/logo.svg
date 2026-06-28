@@ -1,0 +1,5 @@
+<svg viewBox="0 0 64 64" width="96" height="96" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="HyperClass">
+  <rect x="13" y="12" width="11" height="40" rx="5.5" fill="#2C3E50"/>
+  <rect x="40" y="12" width="11" height="40" rx="5.5" fill="#2C3E50"/>
+  <rect x="14" y="27" width="36" height="11" rx="5.5" fill="#FF6B6B" transform="rotate(-20 32 32)"/>
+</svg>

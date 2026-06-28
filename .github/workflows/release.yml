@@ -1,0 +1,79 @@
+name: release
+
+# 打 v* 标签即触发:为 macOS(Apple Silicon + Intel)、Windows、Linux 构建
+# 安装包,并自动创建 GitHub Release 把产物附上。
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            name: 'macOS (Apple Silicon)'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+            name: 'macOS (Intel)'
+          - platform: 'ubuntu-22.04'
+            args: ''
+            name: 'Linux'
+          - platform: 'windows-latest'
+            args: ''
+            name: 'Windows'
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build & release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'HyperClass ${{ github.ref_name }}'
+          releaseBody: |
+            HyperClass · 课堂工具箱 桌面版安装包(由 GitHub Actions 自动构建)。
+
+            下载对应平台:
+            - **macOS (Apple Silicon)**:`*_aarch64.dmg`
+            - **macOS (Intel)**:`*_x64.dmg`
+            - **Windows**:`*_x64-setup.exe` 或 `*_x64_en-US.msi`
+            - **Linux**:`*.AppImage` 或 `*.deb`
+
+            > 安装包未做代码签名,首次打开如遇系统拦截:macOS 右键「打开」,Windows 选「更多信息 → 仍要运行」。
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
