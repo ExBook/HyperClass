@@ -543,3 +543,4 @@ body {
 .em-half { font-size: 13px; font-weight: 800; paint-order: stroke; stroke: rgba(0,0,0,0.12); stroke-width: 0.6px; }
 .em-time { font-size: 11px; font-weight: 700; fill: var(--ink-soft); }
 .em-line { font-size: 12px; font-weight: 700; fill: var(--ink-soft); paint-order: stroke; stroke: rgba(255,255,255,0.85); stroke-width: 3px; }
+.em-jumps-l { font-size: 12px; color: var(--ink-faint); margin-right: 2px; }

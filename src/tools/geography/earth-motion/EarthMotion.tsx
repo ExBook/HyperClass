@@ -78,13 +78,23 @@ export function EarthMotion() {
   const oSun = Math.atan2(ocy - oey, ocx - oex) * 180 / Math.PI;
 
   // ── 自转(北极上空俯视)──
-  // 太阳在右侧 → 正午(12 时);θ 自正午方向逆时针增大,地方时 = 12 + θ/15。
-  const gcx = 300, gcy = 215, gr = 162, cityR = gr * 0.72;
-  const cityX = gcx + cityR * Math.cos(rad(spin)), cityY = gcy - cityR * Math.sin(rad(spin));
-  const cityDay = Math.cos(rad(spin)) > 0;
+  // 太阳在右侧 → 正午(12 时);经度自正午逆时针增大,地方时 = 12 + spin/15。
+  // 晨昏线随季节(直射点纬度 sunLat)倾斜:夏至北极圈内极昼、冬至极夜、二分过极点。
+  const gcx = 300, gcy = 215, gr = 162;
+  const declR = rad(sunLat);
+  const tic = (deg: number, r: number): [number, number] => [gcx + r * Math.cos(rad(deg)), gcy - r * Math.sin(rad(deg))];
+  // 晨昏线(北半球可见段)+ 夜半球区域路径
+  const termPts: [number, number][] = Array.from({ length: 25 }, (_, i) => { const t = Math.PI * i / 24; return [gcx - gr * Math.sin(t) * Math.sin(declR), gcy - gr * Math.cos(t)]; });
+  const nightD = `M ${termPts[0][0].toFixed(1)} ${termPts[0][1].toFixed(1)} ` +
+    termPts.slice(1).map((p) => `L ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ') +
+    ` A ${gr} ${gr} 0 0 1 ${termPts[0][0].toFixed(1)} ${termPts[0][1].toFixed(1)} Z`;
+  // 城市:北纬 40°,昼夜由日照判定(随季节),地方时由经度(spin)决定
+  const cLatR = rad(40), lamR = rad(spin), cityRr = gr * Math.cos(cLatR);
+  const cityX = gcx + cityRr * Math.cos(lamR), cityY = gcy - cityRr * Math.sin(lamR);
+  const cityDay = Math.cos(cLatR) * Math.cos(lamR) * Math.cos(declR) + Math.sin(cLatR) * Math.sin(declR) > 0;
   let h = (12 + spin / 15) % 24; if (h < 0) h += 24;
   const cityTime = `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.floor((h % 1) * 60)).padStart(2, '0')}`;
-  const tic = (deg: number, r: number): [number, number] => [gcx + r * Math.cos(rad(deg)), gcy - r * Math.sin(rad(deg))];
+  const polar = Math.abs(sunLat) > 1 ? (sunLat > 0 ? '北极圈内极昼' : '北极圈内极夜') : null;
 
   const sliderVal = mode === 'revolve' ? phi : spin;
   const onSlide = (v: number) => { setPlaying(false); if (mode === 'revolve') setPhi(v); else setSpin(v); };
@@ -99,13 +109,13 @@ export function EarthMotion() {
         <Btn variant="coral" onClick={() => setPlaying((p) => !p)}><Icon name={playing ? 'player-pause' : 'player-play'} /> {playing ? '暂停' : '播放'}</Btn>
         <div className="em-speed">{SPEEDS.map((s) => <button key={s} className={speed === s ? 'on' : ''} onClick={() => setSpeed(s)}>{s}×</button>)}</div>
         <div style={{ flex: 1 }} />
-        {mode === 'revolve' && <div className="em-jumps">{SEASONS.map((s) => <button key={s.id} className={near?.id === s.id ? 'on' : ''} onClick={() => jump(s.deg)}>{s.name}</button>)}</div>}
+        <div className="em-jumps"><span className="em-jumps-l">{mode === 'revolve' ? '节气' : '季节'}</span>{SEASONS.map((s) => <button key={s.id} className={near?.id === s.id ? 'on' : ''} onClick={() => jump(s.deg)}>{s.name}</button>)}</div>
       </div>
 
       <div className="em-slider">
-        <span>{mode === 'revolve' ? '公转进度' : '自转'}</span>
+        <span>{mode === 'revolve' ? '公转进度(日期)' : '自转(地方时)'}</span>
         <input type="range" min={0} max={359} value={Math.round(sliderVal)} onChange={(e) => onSlide(Number(e.target.value))} />
-        <span className="em-slider-v">{mode === 'revolve' ? dateStr(phi) : `${Math.round(spin)}°`}</span>
+        <span className="em-slider-v">{mode === 'revolve' ? dateStr(phi) : cityTime}</span>
       </div>
 
       <div className="em-main">
@@ -168,13 +178,14 @@ export function EarthMotion() {
               {/* 地球(俯视:外缘=赤道,圆心=北极)*/}
               <g clipPath="url(#em-globe)">
                 <circle cx={gcx} cy={gcy} r={gr} fill={DAY} />
-                <rect x={gcx - gr} y={gcy - gr} width={gr} height={2 * gr} fill={NIGHT} opacity={0.9} />
+                <path d={nightD} fill={NIGHT} opacity={0.9} />
                 {[gr * 0.917, gr * 0.398].map((r, i) => <circle key={i} cx={gcx} cy={gcy} r={r} fill="none" stroke="rgba(44,62,80,0.22)" strokeWidth={1} strokeDasharray="4 3" />)}
                 {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((m) => { const [x, y] = tic(m + spin, gr); return <line key={m} x1={gcx} y1={gcy} x2={x} y2={y} stroke="rgba(44,62,80,0.16)" strokeWidth={1} />; })}
               </g>
               <circle cx={gcx} cy={gcy} r={gr} fill="none" stroke="rgba(44,62,80,0.5)" strokeWidth={1.4} />
-              {/* 晨昏线(与太阳光垂直、过极点)*/}
-              <line x1={gcx} y1={gcy - gr} x2={gcx} y2={gcy + gr} stroke="var(--ink)" strokeWidth={1.8} strokeDasharray="6 3" />
+              {/* 晨昏线(随季节倾斜)*/}
+              <polyline points={termPts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={1.8} strokeDasharray="6 3" />
+              {polar && <text x={gcx} y={tic(sunLat > 0 ? 90 : 270, gr * 0.2)[1]} textAnchor="middle" className="em-polar" fill={sunLat > 0 ? '#E8902C' : '#3a4a63'}>{sunLat > 0 ? '极昼' : '极夜'}</text>}
               {/* 北极 / 赤道 */}
               <circle cx={gcx} cy={gcy} r={3.5} fill="var(--ink)" />
               <text x={gcx + 7} y={gcy - 6} className="em-pole">北极</text>
@@ -214,11 +225,11 @@ export function EarthMotion() {
             </>
           ) : (
             <>
-              <div className="em-card-h">地球自转</div>
-              <div className="em-row"><span>周期</span><b>约 24 小时</b></div>
-              <div className="em-row"><span>方向</span><b>自西向东(逆时针)</b></div>
-              <div className="em-row"><span>城市当地时间</span><b>{cityTime} · {cityDay ? '白天' : '黑夜'}</b></div>
-              <div className="em-note">面向太阳是<b>昼半球</b>,背向是<b>夜半球</b>,分界叫<b>晨昏线</b>。正午对着太阳为 12 时,午夜背着太阳为 0 时;城市随地球逆时针自转,经过晨线(日出)→正午→昏线(日落)→午夜,昼夜交替、时间推移。</div>
+              <div className="em-card-h">地球自转 · {near ? near.name : seasonN}</div>
+              <div className="em-row"><span>日期 / 直射点</span><b>{dateStr(phi)} · {latText(sunLat)}</b></div>
+              <div className="em-row"><span>城市(40°N)</span><b>{cityTime} · {cityDay ? '白天' : '黑夜'}</b></div>
+              {polar && <div className="em-row"><span>极昼极夜</span><b>{polar}</b></div>}
+              <div className="em-note"><b>自转</b>(约 24 小时、自西向东)产生<b>昼夜交替与时间</b>:正午对着太阳 12 时,午夜 0 时。<b>季节</b>(直射点移动)改变晨昏线的倾斜:夏至北极圈内极昼、冬至极夜、二分晨昏线过极点。可切换上方节气,再拖滑块看一天。</div>
               <ul className="em-facts">
                 <li>从北极上空看,自转呈逆时针(自西向东)</li>
                 <li>晨线:由夜进入昼(日出);昏线:由昼进入夜(日落)</li>
