@@ -11,7 +11,7 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-.hc-page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 72px; }
+.hc-page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 40px; min-height: 100vh; display: flex; flex-direction: column; }
 
 /* ===== top bar (home) ===== */
 .hc-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
@@ -548,7 +548,7 @@ body {
 /* ===== contact banner (没有想要的工具?) ===== */
 .contact { display: flex; align-items: center; gap: 14px;
   background: var(--paper); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--hard-shadow); color: var(--ink); }
-.contact--banner { margin-top: 26px; border: 2px dashed var(--rule); }
+.contact--banner { margin-top: auto; border: 2px dashed var(--rule); }
 .contact--card { width: 100%; }
 .contact-ic { width: 44px; height: 44px; flex: none; border-radius: 13px; display: flex; align-items: center; justify-content: center;
   background: var(--coral-soft); color: var(--coral); transform: rotate(-4deg); }
