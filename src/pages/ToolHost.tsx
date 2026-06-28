@@ -2,7 +2,7 @@ import { Suspense, lazy, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getTool } from '../tools/registry';
 import { getSubject } from '../core/subjects';
-import { Shell, StageBar, ContactBanner } from '../app/ui';
+import { Shell, StageBar } from '../app/ui';
 
 export function ToolHost() {
   const { toolId } = useParams<{ toolId: string }>();
@@ -25,7 +25,6 @@ export function ToolHost() {
       <Suspense fallback={<div className="hc-loading">加载中…</div>}>
         <Comp />
       </Suspense>
-      <ContactBanner subject={subject?.name} />
     </Shell>
   );
 }
