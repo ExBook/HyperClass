@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { getSubject } from '../core/subjects';
 import { toolsBySubject } from '../tools/registry';
-import { Shell, StageBar, Icon } from '../app/ui';
+import { Shell, StageBar, Icon, ContactBanner } from '../app/ui';
 
 export function SubjectPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
@@ -34,6 +34,8 @@ export function SubjectPage() {
           ))}
         </div>
       )}
+
+      <ContactBanner subject={subject.name} />
     </Shell>
   );
 }

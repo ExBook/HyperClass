@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { subjects } from '../core/subjects';
 import { toolsBySubject } from '../tools/registry';
-import { Logo, Icon, Shell } from '../app/ui';
+import { Logo, Icon, Shell, ContactBanner } from '../app/ui';
 
 export function Home() {
   const navigate = useNavigate();
@@ -38,6 +38,8 @@ export function Home() {
           );
         })}
       </div>
+
+      <ContactBanner />
     </Shell>
   );
 }

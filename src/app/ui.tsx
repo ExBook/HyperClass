@@ -7,6 +7,7 @@ import {
   IconWorld, IconScale, IconMusic, IconPalette, IconRun, IconDeviceDesktop, IconMap2,
   IconCircleCheck, IconUsersGroup, IconTrophy, IconCrown, IconArrowBackUp, IconCards,
   IconGridDots, IconCloudRain, IconQuestionMark, IconDice, IconChartPie, IconMoodSmile,
+  IconMail, IconSend, IconBulb,
 } from '@tabler/icons-react';
 
 const ICONS: Record<string, TablerIcon> = {
@@ -21,6 +22,7 @@ const ICONS: Record<string, TablerIcon> = {
   'users-group': IconUsersGroup, trophy: IconTrophy, crown: IconCrown, 'arrow-back-up': IconArrowBackUp,
   cards: IconCards, 'grid-dots': IconGridDots, 'cloud-rain': IconCloudRain,
   dice: IconDice, 'chart-pie': IconChartPie, 'mood-smile': IconMoodSmile,
+  mail: IconMail, send: IconSend, bulb: IconBulb,
 };
 
 export function Icon(
@@ -43,6 +45,28 @@ export function Logo({ size = 32 }: { size?: number }) {
 
 export function Shell({ children }: { children: ReactNode }) {
   return <div className="hc-page">{children}</div>;
+}
+
+export const HC_EMAIL = 'hyperclass@163.com';
+
+/** “没有想要的工具?”——引导用户把需求发给开发者。variant 控制样式与文案语境。 */
+export function ContactBanner(
+  { subject, variant = 'banner' }: { subject?: string; variant?: 'banner' | 'card' },
+) {
+  const subjectLine = subject ? `HyperClass ${subject}工具建议` : 'HyperClass 工具建议';
+  const href = `mailto:${HC_EMAIL}?subject=${encodeURIComponent(subjectLine)}`
+    + `&body=${encodeURIComponent('我想要的工具:\n\n使用场景 / 年级学科:\n\n')}`;
+  const title = subject ? `没有想要的${subject}工具?` : '没有你想要的工具?';
+  return (
+    <a className={`contact contact--${variant}`} href={href}>
+      <div className="contact-ic"><Icon name="bulb" size={22} /></div>
+      <div className="contact-text">
+        <div className="contact-title">{title}</div>
+        <div className="contact-sub">把需求告诉开发者,我们来做 · {HC_EMAIL}</div>
+      </div>
+      <span className="contact-btn"><Icon name="send" size={16} /> 联系开发者</span>
+    </a>
+  );
 }
 
 export function Btn(

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shell, StageBar } from '../app/ui';
+import { Shell, StageBar, ContactBanner } from '../app/ui';
 import { load, save } from '../core/storage';
 
 const THEMES = [
@@ -40,6 +40,10 @@ export function Settings() {
               >{t.name}</button>
             ))}
           </div>
+        </section>
+        <section className="settings-group">
+          <h2>反馈与建议</h2>
+          <ContactBanner variant="card" />
         </section>
         <section className="settings-group">
           <h2>关于</h2>
