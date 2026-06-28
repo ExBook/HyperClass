@@ -423,3 +423,44 @@ body {
 @media (max-width: 760px) {
   .dice, .wheel, .nm { grid-template-columns: 1fr; }
 }
+
+/* ===== climate graph (气候直方图判读) ===== */
+.cg { display: flex; flex-direction: column; gap: 16px; }
+.cg-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--paper); border-radius: 14px; padding: 10px 16px; box-shadow: var(--hard-shadow); }
+.cg-top .seg { margin-bottom: 0; }
+.cg-score { font-size: 14px; font-weight: 700; color: var(--ink); background: var(--paper-2); padding: 4px 12px; border-radius: 100px; }
+.cg-main { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; align-items: start; }
+.cg-board { background: var(--paper); border-radius: 18px; padding: 16px 18px; box-shadow: var(--hard-shadow); }
+.cg-legend { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; flex-wrap: wrap; }
+.cg-legend i { display: inline-block; vertical-align: middle; margin-right: 5px; }
+.cg-lg-temp { width: 16px; height: 3px; background: #E24B4A; border-radius: 2px; }
+.cg-lg-prec { width: 11px; height: 11px; background: #378ADD; border-radius: 2px; }
+.cg-title { margin-left: auto; font-size: 15px; color: var(--ink); }
+.cg-svg { width: 100%; height: auto; display: block; }
+.cg-tick { font-size: 11px; fill: var(--ink-soft); }
+.cg-axis { font-size: 11px; fill: var(--ink-faint); }
+.cg-precip { fill: #378ADD; opacity: 0.78; transform-box: fill-box; transform-origin: bottom; animation: cg-grow 0.4s ease both; }
+.cg-temp { stroke: #E24B4A; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: cg-draw 0.9s ease 0.15s forwards; }
+.cg-dot { fill: #E24B4A; opacity: 0; animation: cg-fade 0.3s ease forwards; animation-delay: 0.7s; }
+@keyframes cg-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes cg-draw { to { stroke-dashoffset: 0; } }
+@keyframes cg-fade { to { opacity: 1; } }
+.cg-side { background: var(--paper); border-radius: 18px; padding: 16px; box-shadow: var(--hard-shadow); display: flex; flex-direction: column; gap: 12px; }
+.cg-side-head { font-size: 13px; font-weight: 700; color: var(--ink); }
+.cg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.cg-list button { width: 100%; text-align: left; border: none; cursor: pointer; font: inherit; font-size: 13px; background: var(--paper-2); color: var(--ink); padding: 8px 10px; border-radius: 9px; display: flex; align-items: center; gap: 8px; }
+.cg-list button.on { background: var(--navy); color: #fff; }
+.cg-zone { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px; color: #fff; }
+.cg-zone.z-热带 { background: #E24B4A; } .cg-zone.z-亚热带 { background: #E1A100; } .cg-zone.z-温带 { background: #15A98B; } .cg-zone.z-亚寒带 { background: #378ADD; }
+.cg-options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.cg-opt { width: 100%; border: 2px solid var(--rule); cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; background: var(--paper-2); color: var(--ink); padding: 11px 12px; border-radius: 11px; transition: transform 0.1s; }
+.cg-opt:not(:disabled):hover { transform: translateX(2px); border-color: var(--coral); }
+.cg-opt.ok { background: var(--green); border-color: var(--green); color: #fff; }
+.cg-opt.no { background: #E24B4A; border-color: #E24B4A; color: #fff; }
+.cg-read { background: var(--paper-2); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.cg-read-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-soft); }
+.cg-read-row b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.cg-read-key { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink); background: var(--paper); border-radius: 8px; padding: 6px 8px; }
+.cg-read-hint { font-size: 12px; color: var(--ink-faint); text-align: center; margin-top: 2px; }
+
+@media (max-width: 820px) { .cg-main { grid-template-columns: 1fr; } }
