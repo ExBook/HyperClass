@@ -29,11 +29,11 @@ export const CLIMATES: Climate[] = [
 // 经裁剪到国界内绘制;伸出国界的部分自动消失。
 export type Boundary = { id: string; name: string; dash: boolean; labelAt: [number, number]; pts: [number, number][] };
 export const BOUNDARIES: Boundary[] = [
-  { id: 'tropic', name: '北回归线', dash: true, labelAt: [121.5, 23.5],
+  { id: 'tropic', name: '北回归线', dash: true, labelAt: [113.5, 24.4],
     pts: [[96, 21], [98, 22.3], [101, 22], [104, 22.3], [107, 22.6], [110, 21.8], [112, 22], [115, 22.4], [118, 22.6], [121, 22.4], [124, 22]] },
-  { id: 'qinhuai', name: '秦岭—淮河', dash: false, labelAt: [107.5, 34.6],
+  { id: 'qinhuai', name: '秦岭—淮河', dash: false, labelAt: [108.5, 34.7],
     pts: [[101, 31.5], [103, 33], [106, 33.4], [109, 33.4], [112, 33], [115, 33.2], [118, 33], [121, 32.6], [124, 32]] },
-  { id: 'monsoon', name: '季风区界', dash: false, labelAt: [109.5, 43],
+  { id: 'monsoon', name: '季风区界', dash: false, labelAt: [113.5, 45.5],
     pts: [[100, 34], [102, 35.5], [104, 36.5], [106, 38], [108, 39], [110, 40], [112, 41], [115, 42], [118, 45], [120, 48], [122, 50], [124, 52]] },
   { id: 'plateau', name: '青藏高原边缘', dash: false, labelAt: [90, 38.5],
     pts: [[75, 37], [80, 36.5], [85, 36], [90, 36], [95, 36.5], [100, 37.5], [103, 37], [103, 33], [102, 31], [101, 29.5], [100, 28.5], [97, 28], [95, 27.5]] },

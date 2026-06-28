@@ -137,10 +137,24 @@ export function ChinaClimate() {
             {showColors && <g clipPath="url(#cnclip)">{RENDER_ORDER.map((id) => <polygon key={id} points={zonePoints(id)} fill={tint(byId(id)!.color)} />)}</g>}
             {/* 实色之上描省界,看清各省所属气候带 */}
             {showColors && <g clipPath="url(#cnclip)" pointerEvents="none">{wound.features.map((f) => <path key={`b${f.properties.id}`} d={pathGen(f) ?? ''} fill="none" stroke="rgba(44,62,80,0.18)" strokeWidth={0.5} />)}</g>}
-            {/* 明确的气候分界线(北回归线 / 秦岭—淮河 / 季风区界 / 青藏高原边缘) */}
-            {showColors && <g clipPath="url(#cnclip)" pointerEvents="none">{BOUNDARIES.map((b) => (
-              <polyline key={b.id} points={projPts(b.pts)} fill="none" stroke="var(--ink)" strokeWidth={1.8} strokeOpacity={0.62} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={b.dash ? '6 4' : undefined} />
-            ))}</g>}
+            {/* 明确的气候分界线。非高原的三条额外减去高原区,避免折线西端扎进青藏高原实色里露出断头 */}
+            {showColors && (
+              <>
+                <defs>
+                  <mask id="cn-no-hl" maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
+                    <path d={chinaPath} fill="#fff" />
+                    <polygon points={zonePoints('highland')} fill="#000" />
+                  </mask>
+                </defs>
+                <g pointerEvents="none" fill="none" stroke="var(--ink)" strokeWidth={1.8} strokeOpacity={0.62} strokeLinejoin="round" strokeLinecap="round">
+                  {BOUNDARIES.map((b) => (
+                    <polyline key={b.id} points={projPts(b.pts)} strokeDasharray={b.dash ? '6 4' : undefined}
+                      clipPath={b.id === 'plateau' ? 'url(#cnclip)' : undefined}
+                      mask={b.id === 'plateau' ? undefined : 'url(#cn-no-hl)'} />
+                  ))}
+                </g>
+              </>
+            )}
             {showColors && BOUNDARIES.map((b) => { const p = proj(b.labelAt) as [number, number]; return (
               <text key={`l${b.id}`} x={p[0]} y={p[1]} textAnchor="middle"
                 style={{ fontSize: 11, fill: 'var(--ink-soft)', paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.85)', strokeWidth: 3 }}>{b.name}</text>
