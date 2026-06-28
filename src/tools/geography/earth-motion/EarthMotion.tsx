@@ -77,13 +77,14 @@ export function EarthMotion() {
   const [oex, oey] = epos(phi);
   const oSun = Math.atan2(ocy - oey, ocx - oex) * 180 / Math.PI;
 
-  // ── 自转 ──
-  const gcx = 250, gcy = 210, gr = 155;
-  const cityA = spin, cityVis = Math.cos(rad(cityA)) >= -0.02;
-  const cityX = gcx + gr * 0.8 * Math.sin(rad(cityA)), cityY = gcy - gr * 0.34;
-  const cityDay = cityX < gcx;
-  let h = (12 + (cityA + 90) / 15) % 24; if (h < 0) h += 24;
+  // ── 自转(北极上空俯视)──
+  // 太阳在右侧 → 正午(12 时);θ 自正午方向逆时针增大,地方时 = 12 + θ/15。
+  const gcx = 300, gcy = 215, gr = 162, cityR = gr * 0.72;
+  const cityX = gcx + cityR * Math.cos(rad(spin)), cityY = gcy - cityR * Math.sin(rad(spin));
+  const cityDay = Math.cos(rad(spin)) > 0;
+  let h = (12 + spin / 15) % 24; if (h < 0) h += 24;
   const cityTime = `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.floor((h % 1) * 60)).padStart(2, '0')}`;
+  const tic = (deg: number, r: number): [number, number] => [gcx + r * Math.cos(rad(deg)), gcy - r * Math.sin(rad(deg))];
 
   const sliderVal = mode === 'revolve' ? phi : spin;
   const onSlide = (v: number) => { setPlaying(false); if (mode === 'revolve') setPhi(v); else setSpin(v); };
@@ -154,26 +155,44 @@ export function EarthMotion() {
               <EarthMini cx={oex} cy={oey} r={14} sunAngle={oSun} />
             </svg>
           ) : (
-            <svg viewBox="0 0 760 420" className="em-svg" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 700 430" className="em-svg" xmlns="http://www.w3.org/2000/svg">
+              <text x={20} y={26} className="em-h2">自转(从北极上空俯视)</text>
               <defs>
                 <clipPath id="em-globe"><circle cx={gcx} cy={gcy} r={gr} /></clipPath>
                 <marker id="em-ray2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E8A23C" /></marker>
+                <marker id="em-ccw" markerWidth="9" markerHeight="9" refX="5" refY="3" orient="auto"><path d="M0,0 L6.5,3 L0,6 Z" fill="var(--ink-soft)" /></marker>
               </defs>
-              {[-70, -25, 25, 70].map((dy) => <line key={dy} x1={10} y1={gcy + dy} x2={gcx - gr - 8} y2={gcy + dy} stroke="#E8A23C" strokeWidth={2} strokeOpacity={0.6} markerEnd="url(#em-ray2)" />)}
-              <text x={26} y={gcy - 86} className="em-sun">太阳光</text>
+              {/* 太阳光(自右侧水平射入)*/}
+              {[-78, -28, 28, 78].map((dy) => <line key={dy} x1={gcx + gr + 92} y1={gcy + dy} x2={gcx + gr + 12} y2={gcy + dy} stroke="#E8A23C" strokeWidth={2} strokeOpacity={0.6} markerEnd="url(#em-ray2)" />)}
+              <text x={gcx + gr + 92} y={gcy - 96} textAnchor="end" className="em-sun">太阳光</text>
+              {/* 地球(俯视:外缘=赤道,圆心=北极)*/}
               <g clipPath="url(#em-globe)">
                 <circle cx={gcx} cy={gcy} r={gr} fill={DAY} />
-                <rect x={gcx} y={gcy - gr} width={gr} height={2 * gr} fill={NIGHT} opacity={0.9} />
-                <line x1={gcx - gr} y1={gcy} x2={gcx + gr} y2={gcy} stroke="rgba(44,62,80,0.3)" strokeWidth={1} />
-                {[0, 30, 60, 90, 120, 150].map((m) => { const rxm = Math.abs(gr * Math.cos(rad(m + spin))); const front = Math.cos(rad(m + spin)) >= 0; return <ellipse key={m} cx={gcx} cy={gcy} rx={rxm} ry={gr} fill="none" stroke={`rgba(44,62,80,${front ? 0.26 : 0.1})`} strokeWidth={1} />; })}
+                <rect x={gcx - gr} y={gcy - gr} width={gr} height={2 * gr} fill={NIGHT} opacity={0.9} />
+                {[gr * 0.917, gr * 0.398].map((r, i) => <circle key={i} cx={gcx} cy={gcy} r={r} fill="none" stroke="rgba(44,62,80,0.22)" strokeWidth={1} strokeDasharray="4 3" />)}
+                {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((m) => { const [x, y] = tic(m + spin, gr); return <line key={m} x1={gcx} y1={gcy} x2={x} y2={y} stroke="rgba(44,62,80,0.16)" strokeWidth={1} />; })}
               </g>
-              <circle cx={gcx} cy={gcy} r={gr} fill="none" stroke="rgba(44,62,80,0.5)" strokeWidth={1.3} />
-              <line x1={gcx} y1={gcy - gr} x2={gcx} y2={gcy + gr} stroke="var(--ink)" strokeWidth={1.6} strokeDasharray="5 3" />
-              <text x={gcx + 8} y={gcy - gr * 0.55} className="em-lat" style={{ fontSize: 12 }}>晨昏线</text>
-              <text x={gcx - gr / 2} y={gcy + gr + 26} textAnchor="middle" style={{ fontSize: 13, fontWeight: 700, fill: '#2c6fb0' }}>昼半球</text>
-              <text x={gcx + gr / 2} y={gcy + gr + 26} textAnchor="middle" style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink-soft)' }}>夜半球</text>
-              <text x={gcx} y={gcy - gr - 16} textAnchor="middle" style={{ fontSize: 12, fontWeight: 700, fill: 'var(--ink-soft)' }}>自转方向:自西向东 →</text>
-              {cityVis && <g><circle cx={cityX} cy={cityY} r={6} fill="var(--coral)" stroke="#fff" strokeWidth={2} /><text x={cityX} y={cityY - 11} textAnchor="middle" style={{ fontSize: 11, fontWeight: 700, fill: 'var(--ink)' }}>城市 {cityTime} · {cityDay ? '白天' : '黑夜'}</text></g>}
+              <circle cx={gcx} cy={gcy} r={gr} fill="none" stroke="rgba(44,62,80,0.5)" strokeWidth={1.4} />
+              {/* 晨昏线(与太阳光垂直、过极点)*/}
+              <line x1={gcx} y1={gcy - gr} x2={gcx} y2={gcy + gr} stroke="var(--ink)" strokeWidth={1.8} strokeDasharray="6 3" />
+              {/* 北极 / 赤道 */}
+              <circle cx={gcx} cy={gcy} r={3.5} fill="var(--ink)" />
+              <text x={gcx + 7} y={gcy - 6} className="em-pole">北极</text>
+              <text x={tic(150, gr)[0] - 6} y={tic(150, gr)[1] - 4} className="em-lat" textAnchor="end">赤道</text>
+              {/* 昼夜半球 + 时刻 */}
+              <text x={gcx + gr * 0.5} y={gcy - 6} textAnchor="middle" className="em-half" fill="#2c6fb0">昼半球</text>
+              <text x={gcx - gr * 0.5} y={gcy - 6} textAnchor="middle" className="em-half" fill="#cdd6e3">夜半球</text>
+              <text x={gcx + gr * 0.52} y={gcy + 12} textAnchor="middle" className="em-time">正午 12 时</text>
+              <text x={gcx - gr * 0.52} y={gcy + 12} textAnchor="middle" className="em-time" fill="#cdd6e3">午夜 0 时</text>
+              <text x={gcx} y={gcy - gr - 24} textAnchor="middle" className="em-line">昏线(日落 18 时)</text>
+              <text x={gcx} y={gcy + gr + 22} textAnchor="middle" className="em-line">晨线(日出 6 时)</text>
+              {/* 自转方向:逆时针(顶部箭头向左)*/}
+              <path d={`M ${gcx + 46} ${gcy - gr - 38} Q ${gcx} ${gcy - gr - 54} ${gcx - 46} ${gcy - gr - 38}`} fill="none" stroke="var(--ink-soft)" strokeWidth={2} markerEnd="url(#em-ccw)" />
+              <text x={gcx} y={gcy - gr - 58} textAnchor="middle" style={{ fontSize: 12, fontWeight: 700, fill: 'var(--ink-soft)' }}>自西向东(逆时针)</text>
+              {/* 城市点 + 当地时间 */}
+              <line x1={gcx} y1={gcy} x2={cityX} y2={cityY} stroke="var(--coral)" strokeWidth={1.4} strokeOpacity={0.5} />
+              <circle cx={cityX} cy={cityY} r={6.5} fill="var(--coral)" stroke="#fff" strokeWidth={2} />
+              <text x={cityX} y={cityY - 12} textAnchor="middle" style={{ fontSize: 12, fontWeight: 800, fill: 'var(--ink)', paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.85)', strokeWidth: 3 }}>城市 {cityTime}·{cityDay ? '昼' : '夜'}</text>
             </svg>
           )}
         </div>
@@ -197,13 +216,13 @@ export function EarthMotion() {
             <>
               <div className="em-card-h">地球自转</div>
               <div className="em-row"><span>周期</span><b>约 24 小时</b></div>
-              <div className="em-row"><span>方向</span><b>自西向东</b></div>
-              <div className="em-row"><span>城市当地时间</span><b>{cityVis ? cityTime : '—'}</b></div>
-              <div className="em-note">面向太阳是白天(昼半球),背向是黑夜(夜半球),分界叫<b>晨昏线</b>。地球不停自转,各地昼夜交替、时间推移。</div>
+              <div className="em-row"><span>方向</span><b>自西向东(逆时针)</b></div>
+              <div className="em-row"><span>城市当地时间</span><b>{cityTime} · {cityDay ? '白天' : '黑夜'}</b></div>
+              <div className="em-note">面向太阳是<b>昼半球</b>,背向是<b>夜半球</b>,分界叫<b>晨昏线</b>。正午对着太阳为 12 时,午夜背着太阳为 0 时;城市随地球逆时针自转,经过晨线(日出)→正午→昏线(日落)→午夜,昼夜交替、时间推移。</div>
               <ul className="em-facts">
-                <li>从北极上空看,自转呈逆时针</li>
-                <li>晨线:由夜进入昼;昏线:由昼进入夜</li>
-                <li>东边的地点比西边先看到日出</li>
+                <li>从北极上空看,自转呈逆时针(自西向东)</li>
+                <li>晨线:由夜进入昼(日出);昏线:由昼进入夜(日落)</li>
+                <li>经度每差 15°,地方时差 1 小时;东边先看到日出</li>
               </ul>
             </>
           )}

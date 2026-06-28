@@ -538,3 +538,8 @@ body {
 .em-pole { font-size: 11px; font-weight: 700; fill: var(--ink); }
 .em-direct { font-size: 11.5px; font-weight: 800; fill: #E24B4A; paint-order: stroke; stroke: rgba(255,255,255,0.85); stroke-width: 3px; }
 .em-polar { font-size: 12px; font-weight: 800; paint-order: stroke; stroke: rgba(255,255,255,0.85); stroke-width: 3px; }
+
+/* ===== earth motion 自转(俯视)标签 ===== */
+.em-half { font-size: 13px; font-weight: 800; paint-order: stroke; stroke: rgba(0,0,0,0.12); stroke-width: 0.6px; }
+.em-time { font-size: 11px; font-weight: 700; fill: var(--ink-soft); }
+.em-line { font-size: 12px; font-weight: 700; fill: var(--ink-soft); paint-order: stroke; stroke: rgba(255,255,255,0.85); stroke-width: 3px; }
