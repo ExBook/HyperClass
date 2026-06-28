@@ -2,6 +2,8 @@
 
 `website/` 是 HyperClass 的产品主页,纯静态(`index.html` + `styles.css` + `main.js` + `assets/`),无需构建。
 
+目录内包含 Cloudflare Pages 可识别的 `_headers`,以及基础 `robots.txt`。手动上传时整个 `website/` 文件夹一起上传即可。
+
 ## 部署到 Cloudflare Pages
 
 **方式一:连接 Git 仓库**
@@ -11,7 +13,8 @@
 - (Root directory 默认仓库根即可)
 
 **方式二:Direct Upload**
-- 直接把 `website/` 文件夹拖到 Cloudflare Pages 的「Upload assets」。
+- 直接把 `website/` 文件夹拖到 Cloudflare Pages 的「Upload assets」
+- 上传后检查首页、下载按钮、截图资源是否正常加载
 
 ## 本地预览
 

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './theme/tokens.css';
 import './theme/components.css';
 import App from './App';
-import { applyTheme } from './pages/Settings';
+import { applyTheme } from './core/theme';
 
 applyTheme(JSON.parse(localStorage.getItem('hc.theme') || '"system"'));
 

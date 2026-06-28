@@ -1,6 +1,6 @@
-import { Suspense, lazy, useMemo } from 'react';
+import { Suspense, createElement } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getTool } from '../tools/registry';
+import { getTool, getToolComponent } from '../tools/registry';
 import { getSubject } from '../core/subjects';
 import { Shell, StageBar } from '../app/ui';
 
@@ -8,7 +8,7 @@ export function ToolHost() {
   const { toolId } = useParams<{ toolId: string }>();
   const navigate = useNavigate();
   const tool = toolId ? getTool(toolId) : undefined;
-  const Comp = useMemo(() => (tool ? lazy(tool.entry) : null), [tool]);
+  const Comp = toolId ? getToolComponent(toolId) : undefined;
 
   if (!tool || !Comp) {
     return <Shell><StageBar title="工具不存在" onBack={() => navigate('/')} /></Shell>;
@@ -23,7 +23,7 @@ export function ToolHost() {
         onBack={() => navigate(subject ? `/subject/${subject.id}` : '/')}
       />
       <Suspense fallback={<div className="hc-loading">加载中…</div>}>
-        <Comp />
+        {createElement(Comp)}
       </Suspense>
     </Shell>
   );

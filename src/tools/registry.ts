@@ -1,3 +1,4 @@
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import type { ToolManifest } from '../core/types';
 import { manifest as randomPicker } from './common/random-picker/manifest';
 import { manifest as randomGroup } from './common/random-group/manifest';
@@ -38,6 +39,13 @@ export const tools: ToolManifest[] = [
 
 export const getTool = (id: string): ToolManifest | undefined =>
   tools.find((t) => t.id === id);
+
+const toolComponents = new Map<string, LazyExoticComponent<ComponentType>>(
+  tools.map((tool) => [tool.id, lazy(tool.entry)]),
+);
+
+export const getToolComponent = (id: string) =>
+  toolComponents.get(id);
 
 export const toolsBySubject = (subjectId: string): ToolManifest[] =>
   tools.filter((t) => t.subject === subjectId);

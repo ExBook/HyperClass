@@ -2,18 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell, StageBar, ContactBanner } from '../app/ui';
 import { load, save } from '../core/storage';
+import { applyTheme } from '../core/theme';
 
 const THEMES = [
   { id: 'light', name: '日光' },
   { id: 'dark', name: '月夜' },
   { id: 'system', name: '跟随系统' },
 ] as const;
-
-export function applyTheme(theme: string) {
-  const dark = theme === 'dark'
-    || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-}
 
 export function Settings() {
   const navigate = useNavigate();

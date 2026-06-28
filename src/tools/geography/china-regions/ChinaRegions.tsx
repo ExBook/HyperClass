@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { geoPath } from 'd3-geo';
 import { ensureWinding } from '../../../primitives/drag-label/geo';
 import { buildProjection } from '../../../primitives/drag-label/projection';
@@ -34,7 +34,7 @@ export function ChinaRegions() {
   const proj = useMemo(() => (wound ? buildProjection(wound, W, H) : null), [wound]);
   const pathGen = useMemo(() => (proj ? geoPath(proj) : null), [proj]);
 
-  function beep(freq: number, dur = 0.08) {
+  const beep = useCallback((freq: number, dur = 0.08) => {
     if (!sound) return;
     try {
       const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -44,16 +44,22 @@ export function ChinaRegions() {
       g.gain.setValueAtTime(0.06, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
       o.start(); o.stop(ctx.currentTime + dur);
     } catch { /* audio unavailable */ }
-  }
+  }, [sound]);
 
-  function clickZone(clientX: number, clientY: number): string | null {
+  const clickZone = useCallback((clientX: number, clientY: number): string | null => {
     const svg = boardRef.current; if (!svg || !proj) return null;
     const pt = svg.createSVGPoint(); pt.x = clientX; pt.y = clientY;
     const ctm = svg.getScreenCTM(); if (!ctm) return null;
     const p = pt.matrixTransform(ctm.inverse());
     const ll = proj.invert?.([p.x, p.y]); if (!ll) return null;
     return zoneAt(ll[0], ll[1]);
-  }
+  }, [proj]);
+
+  const assign = useCallback((labelId: string, zoneId: string) => {
+    if (graded) return;
+    setPlacements((prev) => { const n = { ...prev }; for (const k of Object.keys(n)) if (n[k] === zoneId) delete n[k]; n[labelId] = zoneId; return n; });
+    beep(520, 0.05);
+  }, [beep, graded]);
 
   useEffect(() => {
     if (!drag) return;
@@ -61,14 +67,7 @@ export function ChinaRegions() {
     const up = (e: PointerEvent) => { const z = clickZone(e.clientX, e.clientY); if (z) assign(drag.id, z); setDrag(null); setHover(null); };
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
     return () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drag, proj]);
-
-  function assign(labelId: string, zoneId: string) {
-    if (graded) return;
-    setPlacements((prev) => { const n = { ...prev }; for (const k of Object.keys(n)) if (n[k] === zoneId) delete n[k]; n[labelId] = zoneId; return n; });
-    beep(520, 0.05);
-  }
+  }, [assign, clickZone, drag]);
   function unassign(labelId: string) { if (graded) return; setPlacements((prev) => { const n = { ...prev }; delete n[labelId]; return n; }); }
   function setMd(m: Mode) { if (m === mode) return; setMode(m); setPlacements({}); setGraded(false); setFocus(null); }
   function submit() {
