@@ -476,3 +476,29 @@ body {
 .rg-facts-row span { flex: none; width: 32px; color: var(--ink-faint); }
 .rg-facts-row b { color: var(--ink); font-weight: 600; }
 .rg-facts-key { font-size: 12.5px; color: #fff; background: var(--coral); border-radius: 8px; padding: 6px 9px; text-align: center; }
+
+/* ===== contour map (等高线地形图) ===== */
+.cm { display: flex; flex-direction: column; gap: 16px; }
+.cm-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--paper); border-radius: 14px; padding: 10px 16px; box-shadow: var(--hard-shadow); }
+.cm-top .seg { margin-bottom: 0; }
+.cm-iv { font-size: 13px; color: var(--ink-soft); background: var(--paper-2); padding: 4px 12px; border-radius: 100px; }
+.cm-main { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 18px; align-items: start; }
+.cm-board { background: var(--paper); border-radius: 18px; padding: 14px; box-shadow: var(--hard-shadow); }
+.cm-svg { width: 100%; height: auto; display: block; border-radius: 12px; }
+.cm-mk { font-size: 13px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: rgba(255,255,255,0.9); stroke-width: 3px; }
+.cm-pulse { animation: cm-pulse 1.4s ease-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes cm-pulse { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+.cm-side { background: var(--paper); border-radius: 18px; padding: 16px; box-shadow: var(--hard-shadow); display: flex; flex-direction: column; gap: 8px; }
+.cm-side-head { font-size: 13px; font-weight: 700; color: var(--ink); }
+.cm-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.cm-legend li { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-soft); }
+.cm-legend i { width: 22px; height: 13px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.08); flex: none; }
+.cm-how { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.cm-how li { font-size: 12.5px; color: var(--ink-soft); }
+.cm-how b { color: var(--ink); margin-right: 4px; }
+.cm-how u { text-decoration-color: var(--coral); }
+.cm-options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.cm-reveal { background: var(--paper-2); border-radius: 10px; padding: 10px; font-size: 13px; color: var(--ink-soft); }
+.cm-reveal b { color: var(--ink); }
+
+@media (max-width: 820px) { .cm-main { grid-template-columns: 1fr; } }

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@tabler/icons-react": "^3.44.0",
+    "d3-contour": "^4.0.2",
     "d3-geo": "^3.1.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tauri-apps/cli": "^2.11.3",
+    "@types/d3-contour": "^3.0.6",
     "@types/d3-geo": "^3.1.0",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^24.12.3",
