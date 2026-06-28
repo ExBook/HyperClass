@@ -359,3 +359,67 @@ body {
   .dl { grid-template-columns: 1fr; }
   .fg { grid-template-columns: 1fr; }
 }
+
+/* ===== dice (骰子) ===== */
+.dice { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+.dice-stage { background: var(--paper); border-radius: 22px; padding: 40px 32px; min-height: 360px; box-shadow: var(--hard-shadow); transform: rotate(0.3deg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+.dice-tray { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+.die { width: 84px; height: 84px; background: var(--paper-2); border-radius: 18px; box-shadow: var(--hard-shadow); display: flex; align-items: center; justify-content: center; }
+.die svg { width: 78%; height: 78%; }
+.die svg circle { fill: var(--ink); }
+.die-num { font-size: 42px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.dice-tray.rolling .die { animation: dice-tumble 0.32s linear infinite; }
+@keyframes dice-tumble { 0%{transform: rotate(-8deg);} 25%{transform: rotate(6deg) translateY(-6px);} 50%{transform: rotate(-5deg);} 75%{transform: rotate(7deg) translateY(-4px);} 100%{transform: rotate(-8deg);} }
+.dice-sum { font-size: 18px; color: var(--ink-soft); }
+.dice-sum b { font-size: 30px; color: var(--ink); font-weight: 800; margin: 0 4px; }
+.dice-detail { font-size: 14px; color: var(--ink-faint); }
+.dice-panel { background: var(--paper); border-radius: 18px; padding: 18px; box-shadow: var(--hard-shadow); transform: rotate(-0.5deg); display: flex; flex-direction: column; gap: 16px; }
+.dice-count { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-soft); }
+.dice-count button { width: 30px; height: 30px; border: none; cursor: pointer; background: var(--paper-2); border-radius: 8px; font-size: 18px; color: var(--ink); }
+.dice-count button:disabled { opacity: 0.4; cursor: default; }
+.dice-count span { min-width: 20px; text-align: center; font-weight: 700; color: var(--ink); }
+.dice-sides { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--ink-soft); }
+.dice-sides .seg { margin-bottom: 0; flex-wrap: wrap; }
+
+/* ===== spinner (幸运转盘) ===== */
+.wheel { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.wheel-stage { background: var(--paper); border-radius: 22px; padding: 28px; min-height: 360px; box-shadow: var(--hard-shadow); transform: rotate(0.3deg); display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.wheel-wrap { position: relative; width: 360px; max-width: 100%; }
+.wheel-svg { width: 100%; height: auto; display: block; }
+.wheel-pointer { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 24px solid var(--coral); z-index: 3; filter: drop-shadow(0 2px 0 rgba(0,0,0,0.15)); }
+.wheel-result { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--navy); color: #fff; font-weight: 800; font-size: 22px; padding: 10px 22px; border-radius: 14px; box-shadow: var(--hard-shadow); animation: hc-pop 0.42s cubic-bezier(.2,1.3,.4,1); z-index: 4; max-width: 78%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wheel-actions { display: flex; gap: 12px; }
+.wheel-hint { font-size: 13px; color: var(--ink-faint); }
+.wheel-side { background: var(--paper); border-radius: 18px; padding: 18px; box-shadow: var(--hard-shadow); transform: rotate(-0.5deg); display: flex; flex-direction: column; gap: 12px; }
+.wheel-side-head { font-size: 13px; font-weight: 600; color: var(--ink); display: flex; justify-content: space-between; }
+.wheel-side-head span { color: var(--ink-faint); }
+.wheel-input { width: 100%; min-height: 280px; resize: vertical; border: 2px dashed var(--rule); border-radius: 12px; background: var(--paper-2); color: var(--ink); font: inherit; font-size: 14px; padding: 12px 14px; line-height: 1.9; }
+.wheel-input:focus { outline: none; border-color: var(--coral); }
+.wheel-toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ===== noise meter (噪音检测仪) ===== */
+.nm { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.nm-stage { background: var(--paper); border-radius: 22px; padding: 32px; min-height: 360px; box-shadow: var(--hard-shadow); transform: rotate(0.3deg); display: flex; flex-direction: column; align-items: center; gap: 16px; transition: background 0.25s; }
+.nm.over .nm-stage { background: #FCE6E3; }
+.nm-gauge { position: relative; width: 360px; max-width: 100%; }
+.nm-gauge svg { width: 100%; height: auto; display: block; }
+.nm-readout { position: absolute; left: 0; right: 0; bottom: 4%; text-align: center; }
+.nm-level { font-size: 58px; font-weight: 800; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
+.nm-status { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; margin-top: 2px; white-space: nowrap; }
+.nm-status.s-calm { color: var(--green); }
+.nm-status.s-ok { color: #B07A00; }
+.nm-status.s-loud, .nm-status.s-over { color: #E24B4A; }
+.nm-hist { display: flex; align-items: flex-end; gap: 2px; height: 58px; width: 100%; max-width: 440px; }
+.nm-bar { flex: 1; min-width: 2px; border-radius: 2px 2px 0 0; }
+.nm-error { color: #E24B4A; font-size: 13px; text-align: center; max-width: 300px; }
+.nm-panel { background: var(--paper); border-radius: 18px; padding: 18px; box-shadow: var(--hard-shadow); transform: rotate(-0.5deg); display: flex; flex-direction: column; gap: 16px; }
+.nm-thresh { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--ink-soft); }
+.nm-thresh b { color: var(--ink); }
+.nm-thresh input[type=range] { width: 100%; accent-color: var(--coral); }
+.nm-thresh-hint { font-size: 12px; color: var(--ink-faint); }
+.nm-overflag { display: inline-flex; align-items: center; gap: 6px; background: #E24B4A; color: #fff; font-weight: 700; padding: 8px 14px; border-radius: 12px; animation: nm-flash 0.8s infinite; }
+@keyframes nm-flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+@media (max-width: 760px) {
+  .dice, .wheel, .nm { grid-template-columns: 1fr; }
+}
