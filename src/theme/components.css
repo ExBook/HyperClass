@@ -502,3 +502,24 @@ body {
 .cm-reveal b { color: var(--ink); }
 
 @media (max-width: 820px) { .cm-main { grid-template-columns: 1fr; } }
+
+/* ===== earth motion (地球运动) ===== */
+.em { display: flex; flex-direction: column; gap: 16px; }
+.em-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--paper); border-radius: 14px; padding: 10px 16px; box-shadow: var(--hard-shadow); }
+.em-top .seg { margin-bottom: 0; }
+.em-jumps { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.em-jumps button { border: none; cursor: pointer; font: inherit; font-size: 13px; background: var(--paper-2); color: var(--ink-soft); padding: 6px 12px; border-radius: 100px; }
+.em-jumps button.on { background: var(--navy); color: #fff; }
+.em-main { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; }
+.em-board { background: var(--paper); border-radius: 18px; padding: 14px; box-shadow: var(--hard-shadow); }
+.em-svg { width: 100%; height: auto; display: block; }
+.em-side { background: var(--paper); border-radius: 18px; padding: 16px; box-shadow: var(--hard-shadow); display: flex; flex-direction: column; gap: 9px; }
+.em-card-h { font-size: 16px; font-weight: 800; color: var(--ink); }
+.em-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; color: var(--ink-soft); }
+.em-row b { color: var(--ink); font-weight: 700; }
+.em-note { font-size: 12.5px; color: var(--ink-soft); background: var(--paper-2); border-radius: 10px; padding: 10px; line-height: 1.6; }
+.em-facts { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.em-facts li { font-size: 12px; color: var(--ink-faint); padding-left: 14px; position: relative; line-height: 1.5; }
+.em-facts li::before { content: '·'; position: absolute; left: 4px; color: var(--coral); font-weight: 800; }
+
+@media (max-width: 820px) { .em-main { grid-template-columns: 1fr; } }

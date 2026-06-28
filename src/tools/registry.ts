@@ -13,6 +13,7 @@ import { manifest as chinaClimate } from './geography/china-climate/manifest';
 import { manifest as climateGraph } from './geography/climate-graph/manifest';
 import { manifest as chinaRegions } from './geography/china-regions/manifest';
 import { manifest as contourMap } from './geography/contour-map/manifest';
+import { manifest as earthMotion } from './geography/earth-motion/manifest';
 import { manifest as functionGraph } from './math/function-graph/manifest';
 
 /** 工具注册中心。新增工具 = import 它的 manifest 并加进这个数组。 */
@@ -31,6 +32,7 @@ export const tools: ToolManifest[] = [
   climateGraph,
   chinaRegions,
   contourMap,
+  earthMotion,
   functionGraph,
 ];
 
